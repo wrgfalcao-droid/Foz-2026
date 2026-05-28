@@ -502,6 +502,15 @@ self.addEventListener('fetch', function(e) {
     .add-ativ { margin-left: 78px; width: calc(100% - 94px); }
   }
 
+
+  .btn-editar-dia {
+    background: none; border: none; cursor: pointer;
+    font-size: 13px; padding: 2px 4px;
+    opacity: 0.5; border-radius: 6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-editar-dia:active { opacity: 1; background: var(--verde-pale); }
+
   @media print {
     .print-btn, .toolbar, .ios-banner, .dias-nav, .add-ativ, .ativ-actions, .modal-overlay { display: none !important; }
     .dia-body { display: block !important; }
@@ -804,7 +813,7 @@ function renderAgenda() {
     card.innerHTML =
       '<div class="dia-header" onclick="toggleDia(\''+data+'\')">'+
         '<div class="dia-numero"><div class="num">'+String(dia).padStart(2,"0")+'</div><div class="mes">'+mes+'</div><div class="sem">'+sem+'</div></div>'+
-        '<div class="dia-info"><div class="dia-titulo">'+d.titulo+'</div><div class="dia-subtitulo">'+d.subtitulo+'</div><div class="dia-paises">'+paisTags+'</div></div>'+
+        '<div class="dia-info"><div style="display:flex;align-items:center;gap:8px;"><div class="dia-titulo">'+d.titulo+'</div><button class="btn-editar-dia" onclick="event.stopPropagation();abrirEditarDia(\''+data+'\')" title="Editar dia">✏️</button></div><div class="dia-subtitulo">'+d.subtitulo+'</div><div class="dia-paises">'+paisTags+'</div></div>'+
         '<div class="dia-toggle'+(aberto?" aberto":"")+'" id="tog-'+data+'">▾</div>'+
       '</div>'+
       '<div class="dia-body'+(aberto?" aberto":"")+'" id="body-'+data+'">'+
@@ -954,7 +963,54 @@ deletar = function(data, idx) {
 
 carregarLocal();
 
+// ── EDITAR DIA ──
+var modalDiaData = null;
+function abrirEditarDia(data) {
+  modalDiaData = data;
+  document.getElementById("dTitulo").value = agenda[data].titulo || "";
+  document.getElementById("dSubtitulo").value = agenda[data].subtitulo || "";
+  document.getElementById("modalDiaOverlay").classList.add("open");
+}
+function fecharModalDia() {
+  document.getElementById("modalDiaOverlay").classList.remove("open");
+}
+function salvarDia() {
+  var t = document.getElementById("dTitulo").value.trim();
+  var s = document.getElementById("dSubtitulo").value.trim();
+  if (!t) { alert("Preencha o título!"); return; }
+  agenda[modalDiaData].titulo = t;
+  agenda[modalDiaData].subtitulo = s;
+  salvarLocal();
+  fecharModalDia();
+  renderAgenda();
+}
+document.getElementById("modalDiaOverlay").addEventListener("click", function(e) {
+  if (e.target === this) fecharModalDia();
+});
+
+
 renderAgenda();
 </script>
+
+<!-- Modal editar dia -->
+<div class="modal-overlay" id="modalDiaOverlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Editar Dia</h3>
+    <div class="form-group">
+      <label>Título do dia</label>
+      <input type="text" id="dTitulo" placeholder="Ex: Cataratas Brasileiras">
+    </div>
+    <div class="form-group">
+      <label>Subtítulo / descrição</label>
+      <input type="text" id="dSubtitulo" placeholder="Ex: Parque Nacional do Iguaçu">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModalDia()">Cancelar</button>
+      <button class="btn-save" onclick="salvarDia()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
