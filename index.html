@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Agenda · Foz do Iguaçu 2026</title>
+
+<!-- PWA iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Foz 2026">
+<meta name="theme-color" content="#1a6b3a">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='24' fill='%231a6b3a'/%3E%3Ctext x='60' y='80' text-anchor='middle' font-size='64' font-family='Georgia'>🌊%3C/text%3E%3C/svg%3E">
+
+<!-- PWA Manifest inline via JS -->
+<script>
+  // Registrar Service Worker para offline
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      var swCode = `
+const CACHE_NAME = 'foz-agenda-v1';
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll([self.location.pathname]);
+    })
+  );
+  self.skipWaiting();
+});
+self.addEventListener('activate', function(e) {
+  e.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', function(e) {
+  e.respondWith(
+    caches.match(e.request).then(function(resp) {
+      return resp || fetch(e.request).then(function(r) {
+        return caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(e.request, r.clone());
+          return r;
+        });
+      }).catch(function() { return resp; });
+    })
+  );
+});
+      `;
+      var blob = new Blob([swCode], {type: 'application/javascript'});
+      var swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl).catch(function(){});
+    });
+  }
+</script>
+<style>
+  :root {
+    --verde: #1a6b3a;
+    --verde-light: #2d9653;
+    --verde-pale: #e8f5ed;
+    --agua: #0d6b8a;
+    --agua-light: #1a9abf;
+    --agua-pale: #e0f4fa;
+    --areia: #c8a96e;
+    --areia-pale: #fdf6ea;
+    --night: #0f1b14;
+    --dark: #162318;
+    --mid: #2c4232;
+    --muted: #7a9b82;
+    --smoke: #f4f7f5;
+    --white: #ffffff;
+    --border: #d4e5d8;
+    --shadow: 0 4px 24px rgba(15,27,20,0.10);
+    --shadow-lg: 0 12px 48px rgba(15,27,20,0.16);
+
+    /* Fontes nativas iOS/macOS — sem CDN */
+    --font-serif: Georgia, 'Times New Roman', serif;
+    --font-body: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-cond: 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-body); background: var(--smoke); color: var(--dark); min-height: 100vh; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(160deg, var(--night) 0%, var(--dark) 50%, #0a2d1a 100%);
+    color: var(--white);
+    padding: 48px 24px 52px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(45,150,83,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 80% at 10% 80%, rgba(26,154,191,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: var(--font-cond);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--areia);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(28px, 8vw, 52px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .hero h1 em { font-style: italic; color: var(--areia); }
+  .hero-sub {
+    font-family: var(--font-cond);
+    font-size: 15px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    font-weight: 600;
+  }
+  .hero-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--verde-light); }
+  .badge .dot.azul { background: var(--agua-light); }
+  .badge .dot.ouro { background: var(--areia); }
+
+  /* ── LEGENDA ── */
+  .legenda-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+  .legenda-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600;
+    font-family: var(--font-cond);
+    letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--mid);
+  }
+  .legenda-cor { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── CONTAINER ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 28px 16px 80px; }
+
+  /* ── RESUMO ── */
+  .resumo-bar {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    text-align: center;
+  }
+  .resumo-item span {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--font-cond);
+    color: var(--verde);
+  }
+  .resumo-item p {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: var(--font-cond);
+    color: var(--muted);
+    margin-top: 2px;
+    font-weight: 600;
+  }
+
+  /* ── NAV DIAS ── */
+  .dias-nav {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dias-nav button {
+    font-family: var(--font-cond);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dias-nav button:active { background: var(--verde); border-color: var(--verde); color: var(--white); }
+
+  /* ── DIA CARD ── */
+  .dia-card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .dia-header {
+    display: flex;
+    align-items: stretch;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dia-numero {
+    min-width: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 10px;
+    font-family: var(--font-cond);
+    color: var(--white);
+    text-align: center;
+    background: var(--verde);
+  }
+  .dia-numero .num { font-size: 30px; font-weight: 700; line-height: 1; }
+  .dia-numero .mes { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.85; margin-top: 2px; font-weight: 600; }
+  .dia-numero .sem { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.65; margin-top: 1px; font-weight: 600; }
+
+  .dia-info { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
+  .dia-titulo { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .dia-subtitulo { font-size: 12px; color: var(--muted); font-weight: 400; line-height: 1.4; }
+  .dia-paises { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+  .pais-tag {
+    font-family: var(--font-cond);
+    font-size: 10px; letter-spacing: 0.5px;
+    text-transform: uppercase; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .pais-br { background: var(--verde-pale); color: var(--verde); }
+  .pais-ar { background: var(--agua-pale); color: var(--agua); }
+  .pais-py { background: var(--areia-pale); color: #8a5c10; }
+
+  .dia-toggle {
+    display: flex; align-items: center;
+    padding: 16px 16px; color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.3s, color 0.2s;
+  }
+  .dia-toggle.aberto { transform: rotate(180deg); color: var(--verde); }
+
+  /* ── BODY ── */
+  .dia-body { display: none; border-top: 1px solid var(--border); padding: 6px 0 14px; }
+  .dia-body.aberto { display: block; }
+
+  /* ── ATIVIDADE ── */
+  .atividade { display: flex; align-items: flex-start; padding: 0 16px; }
+  .ativ-left {
+    min-width: 54px;
+    padding-top: 17px;
+    text-align: center;
+  }
+  .ativ-hora {
+    font-family: var(--font-cond);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; color: var(--muted);
+    white-space: nowrap;
+  }
+  .ativ-dot-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 17px; min-width: 24px;
+  }
+  .ativ-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--verde);
+    background: var(--verde);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .ativ-dot.ar { box-shadow: 0 0 0 2px var(--agua); background: var(--agua); }
+  .ativ-dot.py { box-shadow: 0 0 0 2px var(--areia); background: var(--areia); }
+  .ativ-dot.livre { box-shadow: 0 0 0 2px var(--muted); background: var(--muted); }
+  .ativ-dot.transp { box-shadow: 0 0 0 2px var(--dark); background: var(--dark); }
+  .ativ-dot-linha { width: 2px; flex: 1; min-height: 28px; background: var(--border); margin-top: 4px; }
+
+  .ativ-content { flex: 1; padding: 12px 12px 12px 10px; }
+  .ativ-nome { font-size: 13.5px; font-weight: 600; color: var(--dark); margin-bottom: 3px; line-height: 1.3; }
+  .ativ-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .ativ-tipo {
+    display: inline-block;
+    font-family: var(--font-cond);
+    font-size: 10px; letter-spacing: 0.7px;
+    text-transform: uppercase; font-weight: 700;
+    padding: 2px 7px; border-radius: 6px; margin-top: 5px;
+  }
+  .ativ-actions { display: flex; gap: 5px; align-items: flex-start; padding-top: 14px; }
+  .btn-icon {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--muted);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .add-ativ {
+    margin: 8px 16px 4px 90px;
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--muted);
+    cursor: pointer;
+    width: calc(100% - 106px);
+    text-align: left;
+  }
+
+  /* ── TIPOS ── */
+  .tipo-atração { background: #e8f5ed; color: var(--verde); }
+  .tipo-refeição { background: #fff3e0; color: #b05700; }
+  .tipo-transporte { background: #e8eaf6; color: #3949ab; }
+  .tipo-hospedagem { background: #fce4ec; color: #c2185b; }
+  .tipo-compras { background: #f3e5f5; color: #7b1fa2; }
+  .tipo-livre { background: #eceff1; color: #546e7a; }
+  .tipo-noite { background: #263238; color: #b0bec5; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15,27,20,0.55);
+    z-index: 1000;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 24px 24px 0 0;
+    padding: 28px 20px 40px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: var(--shadow-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal h3 {
+    font-family: var(--font-serif);
+    font-size: 20px; margin-bottom: 18px; color: var(--dark);
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    font-family: var(--font-cond); color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 16px; /* 16px evita zoom no iOS */
+    color: var(--dark);
+    background: var(--smoke);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .form-group select { background-image: none; }
+  .form-group textarea { resize: none; min-height: 80px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .btn-cancel {
+    flex: 1; padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px; background: none;
+    font-family: var(--font-body); font-size: 15px;
+    cursor: pointer; color: var(--muted); font-weight: 600;
+  }
+  .btn-save {
+    flex: 2; padding: 14px;
+    background: var(--verde); border: none;
+    border-radius: 12px; font-family: var(--font-body);
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; color: var(--white);
+  }
+
+  /* ── PRINT ── */
+  .print-btn {
+    position: fixed; bottom: 20px; right: 16px;
+    background: var(--verde); color: var(--white);
+    border: none; border-radius: 50px;
+    padding: 13px 20px;
+    font-family: var(--font-body); font-weight: 700;
+    font-size: 14px; cursor: pointer;
+    box-shadow: 0 6px 24px rgba(26,107,58,0.35);
+    display: flex; align-items: center; gap: 7px;
+    z-index: 500;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    position: fixed; bottom: 20px; left: 16px;
+    display: flex; flex-direction: column; gap: 9px;
+    z-index: 500;
+  }
+  .toolbar-btn {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 16px;
+    font-family: var(--font-body); font-weight: 700;
+    font-size: 13px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(15,27,20,0.12);
+    display: flex; align-items: center; gap: 7px;
+    color: var(--dark);
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .toolbar-btn:active { background: var(--smoke); }
+  .toolbar-btn.importar { color: var(--agua); border-color: var(--agua-light); }
+  .toolbar-btn.exportar { color: var(--verde); border-color: var(--verde-light); }
+
+  /* ── BANNER iOS ── */
+  .ios-banner {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 16px 20px env(safe-area-inset-bottom, 16px);
+    box-shadow: 0 -8px 32px rgba(15,27,20,0.14);
+    z-index: 600;
+    animation: slideUp 0.35s ease;
+  }
+  .ios-banner.visible { display: block; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .ios-banner-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+  .ios-banner-title { font-family: var(--font-serif); font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+  .ios-banner-text { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .ios-banner-steps { list-style: none; counter-reset: step; margin-bottom: 16px; }
+  .ios-banner-steps li {
+    counter-increment: step;
+    font-size: 13px; color: var(--dark); line-height: 1.5;
+    padding: 6px 0 6px 32px; position: relative; border-bottom: 1px solid var(--border);
+  }
+  .ios-banner-steps li:last-child { border-bottom: none; }
+  .ios-banner-steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 6px;
+    width: 20px; height: 20px;
+    background: var(--verde); color: white;
+    border-radius: 50%; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ios-banner-close {
+    width: 100%; padding: 13px;
+    background: var(--verde); color: white; border: none;
+    border-radius: 12px; font-family: var(--font-body);
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+
+  /* input file escondido */
+  #inputImportar { display: none; }
+
+  @media (max-width: 500px) {
+    .resumo-bar { grid-template-columns: repeat(3, 1fr); }
+    .resumo-bar .resumo-item:nth-child(4),
+    .resumo-bar .resumo-item:nth-child(5) { display: none; }
+    .add-ativ { margin-left: 78px; width: calc(100% - 94px); }
+  }
+
+  @media print {
+    .print-btn, .toolbar, .ios-banner, .dias-nav, .add-ativ, .ativ-actions, .modal-overlay { display: none !important; }
+    .dia-body { display: block !important; }
+    body { background: white; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">✈ Roteiro personalizado · Junho 2026</div>
+  <h1>Foz do Iguaçu<br><em>&amp; Fronteiras</em></h1>
+  <div class="hero-sub">19 – 27 de Junho · 9 dias · 3 países</div>
+  <div class="hero-badges">
+    <span class="badge"><span class="dot"></span> Brasil · Foz do Iguaçu</span>
+    <span class="badge"><span class="dot azul"></span> Argentina · Puerto Iguazú</span>
+    <span class="badge"><span class="dot ouro"></span> Paraguai · Ciudad del Este</span>
+  </div>
+</div>
+
+<div class="legenda-bar">
+  <div class="legenda-item"><div class="legenda-cor" style="background:#2d9653"></div> Brasil</div>
+  <div class="legenda-item"><div class="legenda-cor" style="background:#1a9abf"></div> Argentina</div>
+  <div class="legenda-item"><div class="legenda-cor" style="background:#c8a96e"></div> Paraguai</div>
+  <div class="legenda-item"><div class="legenda-cor" style="background:#546e7a"></div> Livre</div>
+  <div class="legenda-item"><div class="legenda-cor" style="background:#263238"></div> Transporte</div>
+</div>
+
+<div class="container">
+  <div class="resumo-bar">
+    <div class="resumo-item"><span>9</span><p>Dias</p></div>
+    <div class="resumo-item"><span>3</span><p>Países</p></div>
+    <div class="resumo-item"><span id="total-ativ">0</span><p>Atividades</p></div>
+    <div class="resumo-item"><span>19/06</span><p>Chegada</p></div>
+    <div class="resumo-item"><span>27/06</span><p>Retorno</p></div>
+  </div>
+  <div class="dias-nav" id="diasNav"></div>
+  <div id="agenda"></div>
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
+
+<!-- Toolbar flutuante esquerda -->
+<div class="toolbar">
+  <button class="toolbar-btn exportar" onclick="exportarAgenda()">📤 Exportar</button>
+  <button class="toolbar-btn importar" onclick="document.getElementById('inputImportar').click()">📥 Importar</button>
+  <button class="toolbar-btn" onclick="mostrarBannerIOS()" title="Usar offline no iOS">📱 Offline</button>
+</div>
+
+<!-- Input oculto para importar -->
+<input type="file" id="inputImportar" accept=".json" onchange="importarAgenda(event)">
+
+<!-- Banner iOS install -->
+<div class="ios-banner" id="iosBanner">
+  <div class="ios-banner-handle"></div>
+  <div class="ios-banner-title">📱 Usar offline no iPhone</div>
+  <div class="ios-banner-text">Adicione esta agenda à tela de início para acessar sem internet durante a viagem:</div>
+  <ol class="ios-banner-steps">
+    <li>Toque no botão <strong>Compartilhar</strong> (<span style="font-size:15px">⎋</span>) na barra do Safari</li>
+    <li>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
+    <li>Toque em <strong>Adicionar</strong> no canto superior direito</li>
+    <li>O ícone da agenda aparece na sua tela inicial ✅</li>
+  </ol>
+  <button class="ios-banner-close" onclick="fecharBannerIOS()">Entendido!</button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="modalTitulo">Nova Atividade</h3>
+    <div class="form-group">
+      <label>Horário</label>
+      <input type="time" id="fHora">
+    </div>
+    <div class="form-group">
+      <label>Nome da atividade</label>
+      <input type="text" id="fNome" placeholder="Ex: Cataratas do Iguaçu">
+    </div>
+    <div class="form-group">
+      <label>Descrição (opcional)</label>
+      <textarea id="fDesc" placeholder="Observações, dicas, preço..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>País</label>
+      <select id="fPais">
+        <option value="br">🇧🇷 Brasil</option>
+        <option value="ar">🇦🇷 Argentina</option>
+        <option value="py">🇵🇾 Paraguai</option>
+        <option value="livre">🌐 Livre / Geral</option>
+        <option value="transp">✈️ Transporte</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Categoria</label>
+      <select id="fTipo">
+        <option value="atração">Atração turística</option>
+        <option value="refeição">Refeição / Restaurante</option>
+        <option value="transporte">Transporte</option>
+        <option value="hospedagem">Hospedagem</option>
+        <option value="compras">Compras</option>
+        <option value="livre">Tempo livre</option>
+        <option value="noite">Vida noturna</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-save" onclick="salvarAtividade()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var agenda = {
+  "2026-06-19": {
+    titulo: "Chegada em Foz",
+    subtitulo: "Início da aventura nas Cataratas",
+    paises: ["br"],
+    atividades: [
+      { hora: "19:25", nome: "Pouso em Foz do Iguaçu", desc: "Aeroporto Internacional Foz do Iguaçu (IGU)", pais: "transp", tipo: "transporte" },
+      { hora: "20:30", nome: "Check-in no hotel", desc: "Deixar as malas e descansar após o voo", pais: "br", tipo: "hospedagem" },
+      { hora: "22:00", nome: "Jantar de chegada", desc: "Restaurante à beira do Lago de Itaipu ou no centro de Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-20": {
+    titulo: "Cataratas Brasileiras",
+    subtitulo: "Parque Nacional do Iguaçu · Lado brasileiro",
+    paises: ["br"],
+    atividades: [
+      { hora: "08:00", nome: "Café da manhã no hotel", desc: "Energia para o dia nas cataratas!", pais: "br", tipo: "refeição" },
+      { hora: "09:00", nome: "Parque Nacional do Iguaçu", desc: "Trilha das cataratas, passarelas e Garganta do Diabo. Chegue cedo para evitar filas. Ingresso ~R$100", pais: "br", tipo: "atração" },
+      { hora: "12:30", nome: "Almoço no Parque", desc: "Restaurante Porto Canoas (dentro do parque)", pais: "br", tipo: "refeição" },
+      { hora: "14:30", nome: "Macuco Safari (opcional)", desc: "Passeio de barco até a base das cataratas. Vai se molhar!", pais: "br", tipo: "atração" },
+      { hora: "17:00", nome: "Pôr do sol no parque", desc: "Luz dourada para fotos incríveis nas passarelas", pais: "br", tipo: "atração" },
+      { hora: "20:00", nome: "Jantar: Churrascaria no centro", desc: "Foz tem ótimas opções de churrasco gaúcho", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-21": {
+    titulo: "Cataratas Argentinas",
+    subtitulo: "Puerto Iguazú · A vista mais impressionante",
+    paises: ["br","ar"],
+    atividades: [
+      { hora: "08:00", nome: "Café da manhã e saída", desc: "Seguir para a Ponte Internacional Tancredo Neves", pais: "br", tipo: "refeição" },
+      { hora: "09:00", nome: "Travessia para Argentina", desc: "Cruzar a fronteira. Passaporte + câmbio de pesos argentinos (ARS)", pais: "transp", tipo: "transporte" },
+      { hora: "09:30", nome: "Parque Nacional Iguazú · Argentina", desc: "Trem ecológico, Circuito Superior e Inferior. Garganta del Diabo é espetacular! Ingresso ~USD 20", pais: "ar", tipo: "atração" },
+      { hora: "13:00", nome: "Almoço em Puerto Iguazú", desc: "La Aldea de la Selva ou restaurantes na Av. Brasil com pratos típicos argentinos", pais: "ar", tipo: "refeição" },
+      { hora: "15:00", nome: "Hito das Três Fronteiras · Argentina", desc: "Vista para Brasil e Paraguai simultaneamente. Artesanato local", pais: "ar", tipo: "atração" },
+      { hora: "17:30", nome: "Retorno ao Brasil", desc: "Travessia de volta pela ponte", pais: "transp", tipo: "transporte" },
+      { hora: "20:00", nome: "Jantar e descanso", desc: "Restaurante à escolha em Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-22": {
+    titulo: "Ciudad del Este · Paraguai",
+    subtitulo: "Compras e gastronomia paraguaia",
+    paises: ["br","py"],
+    atividades: [
+      { hora: "08:30", nome: "Café da manhã e preparação", desc: "Separar documentos e lista de compras. Câmbio de guaranis (PYG)", pais: "br", tipo: "refeição" },
+      { hora: "09:30", nome: "Travessia Ponte da Amizade", desc: "BR-277 até Ciudad del Este. Limite de isenção: US$500 por pessoa", pais: "transp", tipo: "transporte" },
+      { hora: "10:00", nome: "Shoppings e comércio · CDE", desc: "Monalisa, Hipermaxi, Free Shop. Eletrônicos, perfumes, roupas e bebidas com preços imbatíveis", pais: "py", tipo: "compras" },
+      { hora: "13:00", nome: "Almoço em Ciudad del Este", desc: "Culinária paraguaia ou opções internacionais nos shoppings", pais: "py", tipo: "refeição" },
+      { hora: "14:30", nome: "Mais compras estratégicas", desc: "Lojas especializadas no centro. Cuidado com cambistas e golpes!", pais: "py", tipo: "compras" },
+      { hora: "17:00", nome: "Retorno ao Brasil", desc: "Declaração na Receita Federal se necessário", pais: "transp", tipo: "transporte" },
+      { hora: "20:00", nome: "Jantar e organização das compras", desc: "Descanso no hotel em Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-23": {
+    titulo: "Itaipu & Foz",
+    subtitulo: "Usina e pontos turísticos locais",
+    paises: ["br"],
+    atividades: [
+      { hora: "08:30", nome: "Café da manhã", desc: "Hotel ou cafeteria local", pais: "br", tipo: "refeição" },
+      { hora: "09:30", nome: "Usina de Itaipu", desc: "Tour panorâmico ou especial pela maior usina hidrelétrica binacional do mundo. Reservar com antecedência!", pais: "br", tipo: "atração" },
+      { hora: "12:30", nome: "Almoço", desc: "Restaurante no Espaço das Américas (Itaipu) ou retornar ao centro", pais: "br", tipo: "refeição" },
+      { hora: "14:30", nome: "Ecomuseu de Itaipu", desc: "História da construção e impacto ambiental da usina. Gratuito", pais: "br", tipo: "atração" },
+      { hora: "16:30", nome: "Marco das Três Fronteiras", desc: "Obelisco no encontro dos rios Iguaçu e Paraná. Vista para Argentina e Paraguai", pais: "br", tipo: "atração" },
+      { hora: "19:30", nome: "Jantar temático", desc: "Restaurante El Árabe ou Búfalo Branco — clássicos de Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-24": {
+    titulo: "Dia Livre",
+    subtitulo: "Explorar, descansar ou repetir favoritos",
+    paises: ["br"],
+    atividades: [
+      { hora: "09:00", nome: "Manhã livre", desc: "Piscina do hotel, passeio pela orla ou revisitar pontos favoritos", pais: "livre", tipo: "livre" },
+      { hora: "12:00", nome: "Almoço à escolha", desc: "Explorar opções gastronômicas da cidade", pais: "br", tipo: "refeição" },
+      { hora: "14:00", nome: "Tarde livre / Opcional", desc: "Jardim das Aves, Parque das Aves, Aquário Municipal ou mais compras na Av. Brasil", pais: "br", tipo: "livre" },
+      { hora: "19:00", nome: "Jantar especial", desc: "Celebração da metade da viagem! Escolher o melhor restaurante visitado", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-25": {
+    titulo: "Parque das Aves & Natureza",
+    subtitulo: "Fauna e flora da Mata Atlântica",
+    paises: ["br"],
+    atividades: [
+      { hora: "09:00", nome: "Parque das Aves", desc: "Mais de 900 aves exóticas, incluindo tucanos e flamingos. Ingresso ~R$80", pais: "br", tipo: "atração" },
+      { hora: "12:00", nome: "Almoço", desc: "Café/restaurante no parque ou proximidades", pais: "br", tipo: "refeição" },
+      { hora: "14:00", nome: "Centro de Foz / Compras finais", desc: "Último passeio pelas lojas, Camelódromo, souvenires", pais: "br", tipo: "compras" },
+      { hora: "17:00", nome: "Pôr do sol no Lago", desc: "Orla de Foz com vista para o Lago de Itaipu", pais: "br", tipo: "atração" },
+      { hora: "20:00", nome: "Jantar de penúltima noite", desc: "Restaurante à beira do rio ou churrascaria", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-26": {
+    titulo: "Último Dia Completo",
+    subtitulo: "Pendências e memórias finais",
+    paises: ["br"],
+    atividades: [
+      { hora: "09:00", nome: "Café da manhã especial", desc: "Aproveitar com calma o último café completo", pais: "br", tipo: "refeição" },
+      { hora: "10:00", nome: "Atividade pendente / Extra", desc: "Cataratas noturnas (sex/sáb), Santuário N. Sra. das Graças ou revisitar favorito", pais: "br", tipo: "atração" },
+      { hora: "12:30", nome: "Almoço de despedida", desc: "Retornar a um favorito ou experimentar algo novo", pais: "br", tipo: "refeição" },
+      { hora: "15:00", nome: "Preparar malas e check-out", desc: "Organizar compras, separar notas fiscais, fazer check-out do hotel", pais: "br", tipo: "hospedagem" },
+      { hora: "18:00", nome: "Jantar de encerramento", desc: "Última refeição em Foz — aproveite bastante!", pais: "br", tipo: "refeição" },
+      { hora: "22:00", nome: "Descanso antes do voo", desc: "Dormir cedo — voo de volta às 04:45h da madrugada", pais: "br", tipo: "livre" }
+    ]
+  },
+  "2026-06-27": {
+    titulo: "Retorno",
+    subtitulo: "Até a próxima, Cataratas! ✈",
+    paises: ["br"],
+    atividades: [
+      { hora: "03:00", nome: "Acordar e transfer para o aeroporto", desc: "Pedir transfer ou táxi com antecedência. Manter bagagem separada!", pais: "transp", tipo: "transporte" },
+      { hora: "04:45", nome: "Voo de retorno", desc: "Aeroporto Internacional de Foz do Iguaçu (IGU) — boa viagem! 🛫", pais: "transp", tipo: "transporte" }
+    ]
+  }
+};
+
+var datas = Object.keys(agenda).sort();
+var semanas = ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
+var meses = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+var modalDia = null, modalIdx = null;
+
+function getPaisColor(p) {
+  if (p==="ar") return "ar";
+  if (p==="py") return "py";
+  if (p==="livre") return "livre";
+  if (p==="transp") return "transp";
+  return "";
+}
+function getPaisTag(p) {
+  if (p==="br") return '<span class="pais-tag pais-br">🇧🇷 Brasil</span>';
+  if (p==="ar") return '<span class="pais-tag pais-ar">🇦🇷 Argentina</span>';
+  if (p==="py") return '<span class="pais-tag pais-py">🇵🇾 Paraguai</span>';
+  return "";
+}
+var tipoLabel = { atração:"Atração", refeição:"Refeição", transporte:"Transporte", hospedagem:"Hospedagem", compras:"Compras", livre:"Livre", noite:"Noturno" };
+
+function renderAtividades(data, atividades) {
+  var html = "";
+  atividades.forEach(function(a, i) {
+    var dot = getPaisColor(a.pais);
+    var lbl = tipoLabel[a.tipo] || a.tipo;
+    html += '<div class="atividade">' +
+      '<div class="ativ-left"><div class="ativ-hora">' + (a.hora||"--:--") + '</div></div>' +
+      '<div class="ativ-dot-wrap"><div class="ativ-dot ' + dot + '"></div>' +
+      (i < atividades.length-1 ? '<div class="ativ-dot-linha"></div>' : '') + '</div>' +
+      '<div class="ativ-content">' +
+        '<div class="ativ-nome">' + a.nome + '</div>' +
+        (a.desc ? '<div class="ativ-desc">' + a.desc + '</div>' : '') +
+        '<span class="ativ-tipo tipo-' + a.tipo + '">' + lbl + '</span>' +
+      '</div>' +
+      '<div class="ativ-actions">' +
+        '<button class="btn-icon" onclick="abrirEditar(\'' + data + '\',' + i + ')">✏️</button>' +
+        '<button class="btn-icon" onclick="deletar(\'' + data + '\',' + i + ')">🗑</button>' +
+      '</div></div>';
+  });
+  return html;
+}
+
+function renderAgenda() {
+  datas = Object.keys(agenda).sort();
+  var cont = document.getElementById("agenda");
+  var nav = document.getElementById("diasNav");
+  cont.innerHTML = ""; nav.innerHTML = "";
+  var total = 0;
+  var estadoAberto = {};
+  // salvar estado
+  datas.forEach(function(d) {
+    var b = document.getElementById("body-"+d);
+    if (b) estadoAberto[d] = b.classList.contains("aberto");
+  });
+
+  datas.forEach(function(data, i) {
+    var d = agenda[data];
+    var dt = new Date(data+"T12:00:00");
+    var dia = dt.getDate();
+    var sem = semanas[dt.getDay()];
+    var mes = meses[dt.getMonth()];
+    total += d.atividades.length;
+
+    // nav
+    var btn = document.createElement("button");
+    btn.textContent = String(dia).padStart(2,"0")+" "+sem;
+    btn.onclick = (function(dt){ return function() {
+      document.getElementById("dia-"+dt).scrollIntoView({behavior:"smooth",block:"start"});
+    }; })(data);
+    nav.appendChild(btn);
+
+    var aberto = estadoAberto[data] !== undefined ? estadoAberto[data] : (i===0);
+    var paisTags = d.paises.map(getPaisTag).join("");
+    var card = document.createElement("div");
+    card.className = "dia-card"; card.id = "dia-"+data;
+    card.innerHTML =
+      '<div class="dia-header" onclick="toggleDia(\''+data+'\')">'+
+        '<div class="dia-numero"><div class="num">'+String(dia).padStart(2,"0")+'</div><div class="mes">'+mes+'</div><div class="sem">'+sem+'</div></div>'+
+        '<div class="dia-info"><div class="dia-titulo">'+d.titulo+'</div><div class="dia-subtitulo">'+d.subtitulo+'</div><div class="dia-paises">'+paisTags+'</div></div>'+
+        '<div class="dia-toggle'+(aberto?" aberto":"")+'" id="tog-'+data+'">▾</div>'+
+      '</div>'+
+      '<div class="dia-body'+(aberto?" aberto":"")+'" id="body-'+data+'">'+
+        renderAtividades(data, d.atividades)+
+        '<button class="add-ativ" onclick="abrirNovo(\''+data+'\')">＋ Adicionar atividade</button>'+
+      '</div>';
+    cont.appendChild(card);
+  });
+  document.getElementById("total-ativ").textContent = total;
+}
+
+function toggleDia(data) {
+  document.getElementById("body-"+data).classList.toggle("aberto");
+  document.getElementById("tog-"+data).classList.toggle("aberto");
+}
+
+function abrirNovo(data) {
+  modalDia=data; modalIdx=null;
+  document.getElementById("modalTitulo").textContent="Nova Atividade";
+  document.getElementById("fHora").value="";
+  document.getElementById("fNome").value="";
+  document.getElementById("fDesc").value="";
+  document.getElementById("fPais").value="br";
+  document.getElementById("fTipo").value="atração";
+  document.getElementById("modalOverlay").classList.add("open");
+}
+function abrirEditar(data, idx) {
+  modalDia=data; modalIdx=idx;
+  var a=agenda[data].atividades[idx];
+  document.getElementById("modalTitulo").textContent="Editar Atividade";
+  document.getElementById("fHora").value=a.hora||"";
+  document.getElementById("fNome").value=a.nome;
+  document.getElementById("fDesc").value=a.desc||"";
+  document.getElementById("fPais").value=a.pais;
+  document.getElementById("fTipo").value=a.tipo;
+  document.getElementById("modalOverlay").classList.add("open");
+}
+function fecharModal() { document.getElementById("modalOverlay").classList.remove("open"); }
+function salvarAtividade() {
+  var nova = {
+    hora: document.getElementById("fHora").value,
+    nome: document.getElementById("fNome").value.trim(),
+    desc: document.getElementById("fDesc").value.trim(),
+    pais: document.getElementById("fPais").value,
+    tipo: document.getElementById("fTipo").value
+  };
+  if (!nova.nome) { alert("Preencha o nome da atividade!"); return; }
+  if (modalIdx===null) {
+    agenda[modalDia].atividades.push(nova);
+  } else {
+    agenda[modalDia].atividades[modalIdx]=nova;
+  }
+  agenda[modalDia].atividades.sort(function(a,b){ return (a.hora||"99:99").localeCompare(b.hora||"99:99"); });
+  fecharModal();
+  renderAgenda();
+}
+function deletar(data, idx) {
+  if (!confirm("Excluir esta atividade?")) return;
+  agenda[data].atividades.splice(idx,1);
+  renderAgenda();
+}
+document.getElementById("modalOverlay").addEventListener("click", function(e) {
+  if (e.target===this) fecharModal();
+});
+
+// ── EXPORTAR ──
+function exportarAgenda() {
+  var dados = {
+    versao: "1.0",
+    exportadoEm: new Date().toISOString(),
+    agenda: agenda
+  };
+  var json = JSON.stringify(dados, null, 2);
+  var blob = new Blob([json], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "agenda-foz-iguacu-" + new Date().toISOString().slice(0,10) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── IMPORTAR ──
+function importarAgenda(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var dados = JSON.parse(e.target.result);
+      var novaAgenda = dados.agenda || dados;
+      var datasImport = Object.keys(novaAgenda);
+      if (datasImport.length === 0) throw new Error("Arquivo vazio");
+      var valido = datasImport.every(function(d) {
+        return novaAgenda[d] && Array.isArray(novaAgenda[d].atividades);
+      });
+      if (!valido) throw new Error("Estrutura inválida");
+      if (!confirm("Importar agenda? Isso substituirá os dados atuais.\n\n" + datasImport.length + " dias encontrados.")) return;
+      agenda = novaAgenda;
+      renderAgenda();
+      alert("✅ Agenda importada com sucesso!");
+    } catch(err) {
+      alert("❌ Erro ao importar: " + err.message + "\n\nVerifique se o arquivo é uma exportação válida desta agenda.");
+    }
+    event.target.value = "";
+  };
+  reader.readAsText(file);
+}
+
+// ── BANNER iOS ──
+function mostrarBannerIOS() {
+  document.getElementById("iosBanner").classList.add("visible");
+}
+function fecharBannerIOS() {
+  document.getElementById("iosBanner").classList.remove("visible");
+}
+
+
+// ── PERSISTÊNCIA LOCAL (localStorage) ──
+function salvarLocal() {
+  try { localStorage.setItem('foz-agenda-data', JSON.stringify(agenda)); } catch(e) {}
+}
+function carregarLocal() {
+  try {
+    var salvo = localStorage.getItem('foz-agenda-data');
+    if (salvo) {
+      var parsed = JSON.parse(salvo);
+      if (parsed && Object.keys(parsed).length > 0) {
+        agenda = parsed;
+      }
+    }
+  } catch(e) {}
+}
+
+// Sobrescrever funções para salvar automaticamente
+var _salvarAtividade = salvarAtividade;
+salvarAtividade = function() { _salvarAtividade(); salvarLocal(); };
+var _deletar = deletar;
+deletar = function(data, idx) {
+  if (!confirm("Excluir esta atividade?")) return;
+  agenda[data].atividades.splice(idx,1);
+  salvarLocal();
+  renderAgenda();
+};
+
+carregarLocal();
+
+renderAgenda();
+</script>
+</body>
+</html>
