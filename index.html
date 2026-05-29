@@ -416,6 +416,31 @@ self.addEventListener('fetch', function(e) {
     cursor: pointer; color: var(--white);
   }
 
+  /* ── PAÍSES CHECK ── */
+  .pais-check {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--smoke); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 6px 12px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: var(--font-cond);
+  }
+  .pais-check input { display: none; }
+  .pais-check:has(input:checked) {
+    background: var(--verde-pale); border-color: var(--verde);
+    color: var(--verde);
+  }
+
+  /* ── DRAG & DROP ── */
+  .atividade[draggable="true"] { cursor: grab; }
+  .atividade.dragging { opacity: 0.4; transform: scale(0.98); }
+  .atividade.drag-over { border-top: 2px solid var(--verde); }
+  .drag-handle {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; min-width: 28px; color: var(--border);
+    font-size: 16px; cursor: grab; touch-action: none;
+    user-select: none;
+  }
+
   /* ── PRINT ── */
   .print-btn {
     position: fixed; bottom: 20px; right: 16px;
@@ -647,12 +672,25 @@ self.addEventListener('fetch', function(e) {
     <div class="modal-handle"></div>
     <h3>✏️ Editar Passeio do Dia</h3>
     <div class="form-group">
+      <label>Data</label>
+      <input type="date" id="dData">
+    </div>
+    <div class="form-group">
       <label>Título do passeio</label>
       <input type="text" id="dTitulo" placeholder="Ex: Cataratas Brasileiras">
     </div>
     <div class="form-group">
       <label>Descrição / detalhe</label>
       <input type="text" id="dSubtitulo" placeholder="Ex: Parque Nacional do Iguaçu — manhã e tarde">
+    </div>
+    <div class="form-group">
+      <label>País(es) do dia</label>
+      <div id="dPaisesWrap" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        <label class="pais-check"><input type="checkbox" value="br"> 🇧🇷 Brasil</label>
+        <label class="pais-check"><input type="checkbox" value="ar"> 🇦🇷 Argentina</label>
+        <label class="pais-check"><input type="checkbox" value="py"> 🇵🇾 Paraguai</label>
+        <label class="pais-check"><input type="checkbox" value="livre"> 🌐 Livre</label>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="fecharModalDia()">Cancelar</button>
@@ -799,7 +837,10 @@ function renderAtividades(data, atividades) {
   atividades.forEach(function(a, i) {
     var dot = getPaisColor(a.pais);
     var lbl = tipoLabel[a.tipo] || a.tipo;
-    html += '<div class="atividade">' +
+    html += '<div class="atividade" draggable="true" data-data="'+data+'" data-idx="'+i+'" ' +
+      'ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dragDrop(event)" ondragend="dragEnd(event)"' +
+      'ontouchstart="touchStart(event)" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)">' +
+      '<div class="drag-handle" title="Arrastar">⠿</div>' +
       '<div class="ativ-left"><div class="ativ-hora">' + (a.hora||"--:--") + '</div></div>' +
       '<div class="ativ-dot-wrap"><div class="ativ-dot ' + dot + '"></div>' +
       (i < atividades.length-1 ? '<div class="ativ-dot-linha"></div>' : '') + '</div>' +
@@ -1006,27 +1047,125 @@ carregarLocal();
 var modalDiaData = null;
 function abrirEditarDia(data) {
   modalDiaData = data;
+  document.getElementById("dData").value = data;
   document.getElementById("dTitulo").value = agenda[data].titulo || "";
   document.getElementById("dSubtitulo").value = agenda[data].subtitulo || "";
+  // países
+  var checks = document.querySelectorAll("#dPaisesWrap input[type=checkbox]");
+  var paises = agenda[data].paises || [];
+  checks.forEach(function(c) { c.checked = paises.indexOf(c.value) >= 0; });
   document.getElementById("modalDiaOverlay").classList.add("open");
 }
 function fecharModalDia() {
   document.getElementById("modalDiaOverlay").classList.remove("open");
 }
 function salvarDia() {
+  var novaData = document.getElementById("dData").value;
   var t = document.getElementById("dTitulo").value.trim();
   var s = document.getElementById("dSubtitulo").value.trim();
   if (!t) { alert("Preencha o título!"); return; }
+  if (!novaData) { alert("Selecione uma data!"); return; }
+  var checks = document.querySelectorAll("#dPaisesWrap input[type=checkbox]:checked");
+  var paises = Array.from(checks).map(function(c){ return c.value; });
+  if (paises.length === 0) paises = ["br"];
+
+  // Se a data mudou, mover a chave no objeto agenda
+  if (novaData !== modalDiaData) {
+    if (agenda[novaData]) { alert("Já existe um dia com essa data!"); return; }
+    agenda[novaData] = agenda[modalDiaData];
+    delete agenda[modalDiaData];
+    modalDiaData = novaData;
+  }
   agenda[modalDiaData].titulo = t;
   agenda[modalDiaData].subtitulo = s;
+  agenda[modalDiaData].paises = paises;
   salvarLocal();
   fecharModalDia();
   renderAgenda();
 }
 
+// ── DRAG & DROP (desktop) ──
+var dragSrcData = null, dragSrcIdx = null;
+function dragStart(e) {
+  dragSrcData = e.currentTarget.dataset.data;
+  dragSrcIdx  = parseInt(e.currentTarget.dataset.idx);
+  e.currentTarget.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+}
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  document.querySelectorAll(".atividade.drag-over").forEach(function(el){ el.classList.remove("drag-over"); });
+  e.currentTarget.classList.add("drag-over");
+}
+function dragDrop(e) {
+  e.preventDefault();
+  var tgtData = e.currentTarget.dataset.data;
+  var tgtIdx  = parseInt(e.currentTarget.dataset.idx);
+  if (dragSrcData === tgtData && dragSrcIdx !== tgtIdx) {
+    var arr = agenda[dragSrcData].atividades;
+    var moved = arr.splice(dragSrcIdx, 1)[0];
+    arr.splice(tgtIdx, 0, moved);
+    salvarLocal();
+    renderAgenda();
+  }
+}
+function dragEnd(e) {
+  document.querySelectorAll(".atividade").forEach(function(el){
+    el.classList.remove("dragging","drag-over");
+  });
+}
+
+// ── DRAG & DROP (touch/mobile) ──
+var touchItem = null, touchClone = null, touchData = null, touchIdx = null;
+function touchStart(e) {
+  if (e.target.closest(".btn-icon") || e.target.closest(".ativ-actions")) return;
+  var el = e.currentTarget;
+  touchData = el.dataset.data;
+  touchIdx  = parseInt(el.dataset.idx);
+  touchItem = el;
+  var t = e.touches[0];
+  touchClone = el.cloneNode(true);
+  touchClone.style.cssText = "position:fixed;top:"+(t.clientY-30)+"px;left:"+el.getBoundingClientRect().left+"px;width:"+el.offsetWidth+"px;opacity:0.85;z-index:9999;pointer-events:none;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.18);background:#fff;";
+  document.body.appendChild(touchClone);
+  el.style.opacity = "0.3";
+}
+function touchMove(e) {
+  if (!touchClone) return;
+  e.preventDefault();
+  var t = e.touches[0];
+  touchClone.style.top = (t.clientY - 30) + "px";
+  // highlight target
+  document.querySelectorAll(".atividade.drag-over").forEach(function(el){ el.classList.remove("drag-over"); });
+  var under = document.elementFromPoint(t.clientX, t.clientY);
+  var tgt = under && under.closest(".atividade");
+  if (tgt && tgt !== touchItem) tgt.classList.add("drag-over");
+}
+function touchEnd(e) {
+  if (!touchClone) return;
+  var t = e.changedTouches[0];
+  var under = document.elementFromPoint(t.clientX, t.clientY);
+  var tgt = under && under.closest(".atividade");
+  if (tgt && tgt !== touchItem) {
+    var tgtData = tgt.dataset.data;
+    var tgtIdx  = parseInt(tgt.dataset.idx);
+    if (touchData === tgtData) {
+      var arr = agenda[touchData].atividades;
+      var moved = arr.splice(touchIdx, 1)[0];
+      arr.splice(tgtIdx, 0, moved);
+      salvarLocal();
+    }
+  }
+  touchClone.remove(); touchClone = null;
+  if (touchItem) touchItem.style.opacity = "";
+  touchItem = null;
+  document.querySelectorAll(".atividade.drag-over").forEach(function(el){ el.classList.remove("drag-over"); });
+  renderAgenda();
+}
 
 renderAgenda();
 </script>
 
 </body>
 </html>
+
