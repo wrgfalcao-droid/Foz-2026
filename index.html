@@ -4,135 +4,573 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Agenda · Foz do Iguaçu 2026</title>
+
+<!-- PWA iOS -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Foz 2026">
 <meta name="theme-color" content="#1a6b3a">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='24' fill='%231a6b3a'/%3E%3Ctext x='60' y='80' text-anchor='middle' font-size='64' font-family='Georgia'>🌊%3C/text%3E%3C/svg%3E">
+
+<!-- PWA Manifest inline via JS -->
+<script>
+  // Registrar Service Worker para offline
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      var swCode = `
+const CACHE_NAME = 'foz-agenda-v1';
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll([self.location.pathname]);
+    })
+  );
+  self.skipWaiting();
+});
+self.addEventListener('activate', function(e) {
+  e.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', function(e) {
+  e.respondWith(
+    caches.match(e.request).then(function(resp) {
+      return resp || fetch(e.request).then(function(r) {
+        return caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(e.request, r.clone());
+          return r;
+        });
+      }).catch(function() { return resp; });
+    })
+  );
+});
+      `;
+      var blob = new Blob([swCode], {type: 'application/javascript'});
+      var swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl).catch(function(){});
+    });
+  }
+</script>
 <style>
   :root {
-    --verde: #1a6b3a; --verde-light: #2d9653; --verde-pale: #e8f5ed;
-    --agua: #0d6b8a; --agua-light: #1a9abf; --agua-pale: #e0f4fa;
-    --areia: #c8a96e; --areia-pale: #fdf6ea;
-    --night: #0f1b14; --dark: #162318; --mid: #2c4232; --muted: #7a9b82;
-    --smoke: #f4f7f5; --white: #ffffff; --border: #d4e5d8;
-    --shadow: 0 4px 24px rgba(15,27,20,0.10); --shadow-lg: 0 12px 48px rgba(15,27,20,0.16);
-    --font-serif: Georgia,'Times New Roman',serif;
-    --font-body: -apple-system,'Helvetica Neue',Arial,sans-serif;
-    --font-cond: 'Arial Narrow','Helvetica Neue',Arial,sans-serif;
+    --verde: #1a6b3a;
+    --verde-light: #2d9653;
+    --verde-pale: #e8f5ed;
+    --agua: #0d6b8a;
+    --agua-light: #1a9abf;
+    --agua-pale: #e0f4fa;
+    --areia: #c8a96e;
+    --areia-pale: #fdf6ea;
+    --night: #0f1b14;
+    --dark: #162318;
+    --mid: #2c4232;
+    --muted: #7a9b82;
+    --smoke: #f4f7f5;
+    --white: #ffffff;
+    --border: #d4e5d8;
+    --shadow: 0 4px 24px rgba(15,27,20,0.10);
+    --shadow-lg: 0 12px 48px rgba(15,27,20,0.16);
+
+    /* Fontes nativas iOS/macOS — sem CDN */
+    --font-serif: Georgia, 'Times New Roman', serif;
+    --font-body: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-cond: 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:var(--font-body); background:var(--smoke); color:var(--dark); min-height:100vh; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-body); background: var(--smoke); color: var(--dark); min-height: 100vh; }
 
   /* ── HERO ── */
-  .hero { background:linear-gradient(160deg,var(--night) 0%,var(--dark) 50%,#0a2d1a 100%); color:var(--white); padding:48px 24px 40px; position:relative; overflow:hidden; }
-  .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 70% 50%,rgba(45,150,83,.18) 0%,transparent 70%),radial-gradient(ellipse 50% 80% at 10% 80%,rgba(26,154,191,.12) 0%,transparent 70%); pointer-events:none; }
-  .hero-label { font-family:var(--font-cond); font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--areia); margin-bottom:12px; font-weight:600; }
-  .hero h1 { font-family:var(--font-serif); font-size:clamp(28px,8vw,52px); font-weight:700; line-height:1.15; margin-bottom:8px; }
-  .hero h1 em { font-style:italic; color:var(--areia); }
-  .hero-sub { font-family:var(--font-cond); font-size:15px; color:var(--muted); letter-spacing:1px; margin-bottom:20px; font-weight:600; }
-  .hero-badges { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
-  .badge { display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:20px; padding:7px 14px; font-size:13px; font-weight:500; color:var(--white); }
-  .badge .dot { width:7px; height:7px; border-radius:50%; background:var(--verde-light); }
-  .badge .dot.azul { background:var(--agua-light); }
-  .badge .dot.ouro { background:var(--areia); }
+  .hero {
+    background: linear-gradient(160deg, var(--night) 0%, var(--dark) 50%, #0a2d1a 100%);
+    color: var(--white);
+    padding: 48px 24px 52px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(45,150,83,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 80% at 10% 80%, rgba(26,154,191,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: var(--font-cond);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--areia);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(28px, 8vw, 52px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .hero h1 em { font-style: italic; color: var(--areia); }
+  .hero-sub {
+    font-family: var(--font-cond);
+    font-size: 15px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    font-weight: 600;
+  }
+  .hero-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--verde-light); }
+  .badge .dot.azul { background: var(--agua-light); }
+  .badge .dot.ouro { background: var(--areia); }
 
-  /* ── LISTA DE DATAS (novo) ── */
-  .datas-periodo { position:relative; z-index:2; }
-  .datas-titulo { font-family:var(--font-cond); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.45); font-weight:600; margin-bottom:10px; }
-  .datas-lista { display:flex; gap:6px; flex-wrap:wrap; }
-  .data-chip { display:inline-flex; flex-direction:column; align-items:center; gap:1px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:6px 10px; cursor:pointer; transition:background .15s,border-color .15s; -webkit-tap-highlight-color:transparent; text-decoration:none; min-width:46px; }
-  .data-chip:hover, .data-chip.hoje { background:rgba(45,150,83,.30); border-color:rgba(45,150,83,.60); }
-  .data-chip .dc-num { font-family:var(--font-cond); font-size:16px; font-weight:700; color:var(--white); line-height:1; }
-  .data-chip .dc-sem { font-family:var(--font-cond); font-size:9px; letter-spacing:.8px; text-transform:uppercase; color:rgba(255,255,255,.50); font-weight:600; }
-  .data-chip .dc-pais { display:flex; gap:2px; margin-top:3px; }
-  .data-chip .dc-dot { width:5px; height:5px; border-radius:50%; }
+  /* ── LEGENDA ── */
+  .legenda-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+  .legenda-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600;
+    font-family: var(--font-cond);
+    letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--mid);
+  }
+  .legenda-cor { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
 
-  .legenda-bar { background:var(--white); border-bottom:1px solid var(--border); padding:12px 20px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; }
-  .legenda-item { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; font-family:var(--font-cond); letter-spacing:.5px; text-transform:uppercase; color:var(--mid); }
-  .legenda-cor { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
-  .container { max-width:900px; margin:0 auto; padding:28px 16px 80px; }
-  .resumo-bar { background:var(--white); border-radius:16px; box-shadow:var(--shadow); padding:18px 20px; margin-bottom:22px; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; text-align:center; }
-  .resumo-item span { display:block; font-size:24px; font-weight:700; font-family:var(--font-cond); color:var(--verde); }
-  .resumo-item p { font-size:10px; text-transform:uppercase; letter-spacing:.8px; font-family:var(--font-cond); color:var(--muted); margin-top:2px; font-weight:600; }
-  .dias-nav { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:22px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .dias-nav button { font-family:var(--font-cond); font-size:12px; letter-spacing:.5px; text-transform:uppercase; font-weight:700; padding:7px 13px; border-radius:20px; border:1.5px solid var(--border); background:var(--white); color:var(--muted); cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
-  .dias-nav button:active { background:var(--verde); border-color:var(--verde); color:var(--white); }
-  .dia-card { background:var(--white); border-radius:16px; box-shadow:var(--shadow); margin-bottom:16px; overflow:hidden; }
-  .dia-header { display:flex; align-items:stretch; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-  .dia-numero { min-width:68px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 10px; font-family:var(--font-cond); color:var(--white); text-align:center; background:var(--verde); }
-  .dia-numero .num { font-size:30px; font-weight:700; line-height:1; }
-  .dia-numero .mes { font-size:10px; letter-spacing:1px; text-transform:uppercase; opacity:.85; margin-top:2px; font-weight:600; }
-  .dia-numero .sem { font-size:9px; letter-spacing:1px; text-transform:uppercase; opacity:.65; margin-top:1px; font-weight:600; }
-  .dia-info { flex:1; padding:14px 16px; display:flex; flex-direction:column; justify-content:center; }
-  .dia-titulo { font-family:var(--font-serif); font-size:16px; font-weight:700; color:var(--dark); margin-bottom:4px; }
-  .dia-subtitulo { font-size:12px; color:var(--muted); font-weight:400; line-height:1.4; }
-  .dia-paises { display:flex; gap:5px; margin-top:7px; flex-wrap:wrap; }
-  .dia-data-completa { font-family:var(--font-cond); font-size:11px; font-weight:600; letter-spacing:.8px; text-transform:uppercase; color:var(--verde); margin-bottom:3px; }
-  .pais-tag { font-family:var(--font-cond); font-size:10px; letter-spacing:.5px; text-transform:uppercase; font-weight:700; padding:2px 8px; border-radius:10px; }
-  .pais-br { background:var(--verde-pale); color:var(--verde); }
-  .pais-ar { background:var(--agua-pale); color:var(--agua); }
-  .pais-py { background:var(--areia-pale); color:#8a5c10; }
-  .dia-toggle { display:flex; align-items:center; padding:16px; color:var(--muted); font-size:18px; transition:transform .3s,color .2s; }
-  .dia-toggle.aberto { transform:rotate(180deg); color:var(--verde); }
-  .dia-body { display:none; border-top:1px solid var(--border); padding:6px 0 14px; }
-  .dia-body.aberto { display:block; }
-  .atividade { display:flex; align-items:flex-start; padding:0 16px; }
-  .ativ-left { min-width:54px; padding-top:17px; text-align:center; }
-  .ativ-hora { font-family:var(--font-cond); font-size:11px; font-weight:700; letter-spacing:.5px; color:var(--muted); white-space:nowrap; }
-  .ativ-dot-wrap { display:flex; flex-direction:column; align-items:center; padding-top:17px; min-width:24px; }
-  .ativ-dot { width:12px; height:12px; border-radius:50%; border:2px solid var(--white); box-shadow:0 0 0 2px var(--verde); background:var(--verde); flex-shrink:0; margin-top:5px; }
-  .ativ-dot.ar { box-shadow:0 0 0 2px var(--agua); background:var(--agua); }
-  .ativ-dot.py { box-shadow:0 0 0 2px var(--areia); background:var(--areia); }
-  .ativ-dot.livre { box-shadow:0 0 0 2px var(--muted); background:var(--muted); }
-  .ativ-dot.transp { box-shadow:0 0 0 2px var(--dark); background:var(--dark); }
-  .ativ-dot-linha { width:2px; flex:1; min-height:28px; background:var(--border); margin-top:4px; }
-  .ativ-content { flex:1; padding:12px 12px 12px 10px; }
-  .ativ-nome { font-size:13.5px; font-weight:600; color:var(--dark); margin-bottom:3px; line-height:1.3; }
-  .ativ-desc { font-size:12px; color:var(--muted); line-height:1.5; }
-  .ativ-tipo { display:inline-block; font-family:var(--font-cond); font-size:10px; letter-spacing:.7px; text-transform:uppercase; font-weight:700; padding:2px 7px; border-radius:6px; margin-top:5px; }
-  .ativ-actions { display:flex; gap:5px; align-items:flex-start; padding-top:14px; }
-  .btn-icon { background:none; border:1px solid var(--border); border-radius:8px; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); -webkit-tap-highlight-color:transparent; }
-  .add-ativ { margin:8px 16px 4px 90px; background:none; border:1.5px dashed var(--border); border-radius:10px; padding:9px 14px; font-size:13px; font-family:var(--font-body); color:var(--muted); cursor:pointer; width:calc(100% - 106px); text-align:left; }
-  .tipo-atração { background:#e8f5ed; color:var(--verde); }
-  .tipo-refeição { background:#fff3e0; color:#b05700; }
-  .tipo-transporte { background:#e8eaf6; color:#3949ab; }
-  .tipo-hospedagem { background:#fce4ec; color:#c2185b; }
-  .tipo-compras { background:#f3e5f5; color:#7b1fa2; }
-  .tipo-livre { background:#eceff1; color:#546e7a; }
-  .tipo-noite { background:#263238; color:#b0bec5; }
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,27,20,.55); z-index:1000; align-items:flex-end; justify-content:center; }
-  .modal-overlay.open { display:flex; }
-  .modal { background:var(--white); border-radius:24px 24px 0 0; padding:28px 20px 40px; width:100%; max-width:600px; box-shadow:var(--shadow-lg); max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-  .modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
-  .modal h3 { font-family:var(--font-serif); font-size:20px; margin-bottom:18px; color:var(--dark); }
-  .form-group { margin-bottom:14px; }
-  .form-group label { display:block; font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; font-family:var(--font-cond); color:var(--muted); margin-bottom:6px; }
-  .form-group input,.form-group textarea,.form-group select { width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:12px; font-family:var(--font-body); font-size:16px; color:var(--dark); background:var(--smoke); outline:none; -webkit-appearance:none; appearance:none; }
-  .form-group textarea { resize:none; min-height:80px; }
-  .modal-actions { display:flex; gap:10px; margin-top:18px; }
-  .btn-cancel { flex:1; padding:14px; border:1.5px solid var(--border); border-radius:12px; background:none; font-family:var(--font-body); font-size:15px; cursor:pointer; color:var(--muted); font-weight:600; }
-  .btn-save { flex:2; padding:14px; background:var(--verde); border:none; border-radius:12px; font-family:var(--font-body); font-size:15px; font-weight:700; cursor:pointer; color:var(--white); }
-  .pais-check { display:flex; align-items:center; gap:6px; background:var(--smoke); border:1.5px solid var(--border); border-radius:20px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-cond); }
-  .pais-check input { display:none; }
-  .pais-check:has(input:checked) { background:var(--verde-pale); border-color:var(--verde); color:var(--verde); }
-  .drag-handle { display:flex; align-items:center; justify-content:center; width:28px; min-width:28px; color:var(--border); font-size:16px; cursor:grab; touch-action:none; user-select:none; }
-  .dia-drag-handle { display:flex; align-items:center; justify-content:center; width:24px; min-width:24px; font-size:18px; color:rgba(255,255,255,.5); cursor:grab; user-select:none; touch-action:none; margin-right:2px; }
-  .dia-card.dia-dragging { opacity:.4; }
-  .dia-card.dia-drag-over { outline:2px dashed var(--verde); outline-offset:-2px; border-radius:16px; }
-  .print-btn { position:fixed; bottom:20px; right:16px; background:var(--verde); color:var(--white); border:none; border-radius:50px; padding:13px 20px; font-family:var(--font-body); font-weight:700; font-size:14px; cursor:pointer; box-shadow:0 6px 24px rgba(26,107,58,.35); display:flex; align-items:center; gap:7px; z-index:500; -webkit-tap-highlight-color:transparent; }
-  .toolbar { position:fixed; bottom:20px; left:16px; display:flex; flex-direction:column; gap:9px; z-index:500; }
-  .toolbar-btn { background:var(--white); border:1.5px solid var(--border); border-radius:50px; padding:11px 16px; font-family:var(--font-body); font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 4px 16px rgba(15,27,20,.12); display:flex; align-items:center; gap:7px; color:var(--dark); -webkit-tap-highlight-color:transparent; white-space:nowrap; }
-  .toolbar-btn.exportar { color:var(--agua); border-color:var(--agua-light); }
-  .toolbar-btn.importar { color:var(--verde); border-color:var(--verde-light); }
-  .toolbar-btn.salvar { background:var(--verde); color:var(--white); border-color:var(--verde); box-shadow:0 4px 16px rgba(26,107,58,.30); }
-  .toolbar-btn.salvar.ok { background:#2d9653; border-color:#2d9653; }
-  #inputImportar { display:none; }
-  .btn-editar-dia { background:var(--verde-pale); border:1.5px solid var(--verde-light); border-radius:8px; cursor:pointer; font-size:12px; padding:4px 10px; color:var(--verde); font-family:var(--font-cond); font-weight:700; letter-spacing:.5px; text-transform:uppercase; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; -webkit-tap-highlight-color:transparent; flex-shrink:0; }
-  .dia-titulo-wrap { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  #toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--dark); color:var(--white); padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; z-index:9999; white-space:nowrap; }
-  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-  @media (max-width:500px) { .resumo-bar { grid-template-columns:repeat(3,1fr); } .resumo-bar .resumo-item:nth-child(4),.resumo-bar .resumo-item:nth-child(5) { display:none; } .add-ativ { margin-left:78px; width:calc(100% - 94px); } }
-  @media print { .print-btn,.toolbar,.dias-nav,.add-ativ,.ativ-actions,.modal-overlay,.datas-periodo { display:none !important; } .dia-body { display:block !important; } body { background:white; } }
+  /* ── CONTAINER ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 28px 16px 80px; }
+
+  /* ── RESUMO ── */
+  .resumo-bar {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    text-align: center;
+  }
+  .resumo-item span {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--font-cond);
+    color: var(--verde);
+  }
+  .resumo-item p {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: var(--font-cond);
+    color: var(--muted);
+    margin-top: 2px;
+    font-weight: 600;
+  }
+
+  /* ── NAV DIAS ── */
+  .dias-nav {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dias-nav button {
+    font-family: var(--font-cond);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dias-nav button:active { background: var(--verde); border-color: var(--verde); color: var(--white); }
+
+  /* ── DIA CARD ── */
+  .dia-card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .dia-header {
+    display: flex;
+    align-items: stretch;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dia-numero {
+    min-width: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 10px;
+    font-family: var(--font-cond);
+    color: var(--white);
+    text-align: center;
+    background: var(--verde);
+  }
+  .dia-numero .num { font-size: 30px; font-weight: 700; line-height: 1; }
+  .dia-numero .mes { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.85; margin-top: 2px; font-weight: 600; }
+  .dia-numero .sem { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.65; margin-top: 1px; font-weight: 600; }
+
+  .dia-info { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
+  .dia-titulo { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .dia-subtitulo { font-size: 12px; color: var(--muted); font-weight: 400; line-height: 1.4; }
+  .dia-paises { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+  .pais-tag {
+    font-family: var(--font-cond);
+    font-size: 10px; letter-spacing: 0.5px;
+    text-transform: uppercase; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .pais-br { background: var(--verde-pale); color: var(--verde); }
+  .pais-ar { background: var(--agua-pale); color: var(--agua); }
+  .pais-py { background: var(--areia-pale); color: #8a5c10; }
+
+  .dia-toggle {
+    display: flex; align-items: center;
+    padding: 16px 16px; color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.3s, color 0.2s;
+  }
+  .dia-toggle.aberto { transform: rotate(180deg); color: var(--verde); }
+
+  /* ── BODY ── */
+  .dia-body { display: none; border-top: 1px solid var(--border); padding: 6px 0 14px; }
+  .dia-body.aberto { display: block; }
+
+  /* ── ATIVIDADE ── */
+  .atividade { display: flex; align-items: flex-start; padding: 0 16px; }
+  .ativ-left {
+    min-width: 54px;
+    padding-top: 17px;
+    text-align: center;
+  }
+  .ativ-hora {
+    font-family: var(--font-cond);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; color: var(--muted);
+    white-space: nowrap;
+  }
+  .ativ-dot-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 17px; min-width: 24px;
+  }
+  .ativ-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--verde);
+    background: var(--verde);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .ativ-dot.ar { box-shadow: 0 0 0 2px var(--agua); background: var(--agua); }
+  .ativ-dot.py { box-shadow: 0 0 0 2px var(--areia); background: var(--areia); }
+  .ativ-dot.livre { box-shadow: 0 0 0 2px var(--muted); background: var(--muted); }
+  .ativ-dot.transp { box-shadow: 0 0 0 2px var(--dark); background: var(--dark); }
+  .ativ-dot-linha { width: 2px; flex: 1; min-height: 28px; background: var(--border); margin-top: 4px; }
+
+  .ativ-content { flex: 1; padding: 12px 12px 12px 10px; }
+  .ativ-nome { font-size: 13.5px; font-weight: 600; color: var(--dark); margin-bottom: 3px; line-height: 1.3; }
+  .ativ-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .ativ-tipo {
+    display: inline-block;
+    font-family: var(--font-cond);
+    font-size: 10px; letter-spacing: 0.7px;
+    text-transform: uppercase; font-weight: 700;
+    padding: 2px 7px; border-radius: 6px; margin-top: 5px;
+  }
+  .ativ-actions { display: flex; gap: 5px; align-items: flex-start; padding-top: 14px; }
+  .btn-icon {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--muted);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .add-ativ {
+    margin: 8px 16px 4px 90px;
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--muted);
+    cursor: pointer;
+    width: calc(100% - 106px);
+    text-align: left;
+  }
+
+  /* ── TIPOS ── */
+  .tipo-atração { background: #e8f5ed; color: var(--verde); }
+  .tipo-refeição { background: #fff3e0; color: #b05700; }
+  .tipo-transporte { background: #e8eaf6; color: #3949ab; }
+  .tipo-hospedagem { background: #fce4ec; color: #c2185b; }
+  .tipo-compras { background: #f3e5f5; color: #7b1fa2; }
+  .tipo-livre { background: #eceff1; color: #546e7a; }
+  .tipo-noite { background: #263238; color: #b0bec5; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15,27,20,0.55);
+    z-index: 1000;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 24px 24px 0 0;
+    padding: 28px 20px 40px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: var(--shadow-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal h3 {
+    font-family: var(--font-serif);
+    font-size: 20px; margin-bottom: 18px; color: var(--dark);
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    font-family: var(--font-cond); color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 16px; /* 16px evita zoom no iOS */
+    color: var(--dark);
+    background: var(--smoke);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .form-group select { background-image: none; }
+  .form-group textarea { resize: none; min-height: 80px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .btn-cancel {
+    flex: 1; padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px; background: none;
+    font-family: var(--font-body); font-size: 15px;
+    cursor: pointer; color: var(--muted); font-weight: 600;
+  }
+  .btn-save {
+    flex: 2; padding: 14px;
+    background: var(--verde); border: none;
+    border-radius: 12px; font-family: var(--font-body);
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; color: var(--white);
+  }
+
+  /* ── PAÍSES CHECK ── */
+  .pais-check {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--smoke); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 6px 12px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: var(--font-cond);
+  }
+  .pais-check input { display: none; }
+  .pais-check:has(input:checked) {
+    background: var(--verde-pale); border-color: var(--verde);
+    color: var(--verde);
+  }
+
+  /* ── DRAG & DROP ── */
+  .atividade[draggable="true"] { cursor: grab; }
+  .atividade.dragging { opacity: 0.4; transform: scale(0.98); }
+  .atividade.drag-over { border-top: 2px solid var(--verde); }
+  .drag-handle {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; min-width: 28px; color: var(--border);
+    font-size: 16px; cursor: grab; touch-action: none;
+    user-select: none;
+  }
+  .dia-drag-handle {
+    display: flex; align-items: center; justify-content: center;
+    width: 24px; min-width: 24px; font-size: 18px;
+    color: rgba(255,255,255,0.5); cursor: grab;
+    user-select: none; touch-action: none; margin-right: 2px;
+  }
+  .dia-card.dia-dragging { opacity: 0.4; }
+  .dia-card.dia-drag-over { outline: 2px dashed var(--verde); outline-offset: -2px; border-radius: 16px; }
+
+  /* ── PRINT ── */
+  .print-btn {
+    position: fixed; bottom: 20px; right: 16px;
+    background: var(--verde); color: var(--white);
+    border: none; border-radius: 50px;
+    padding: 13px 20px;
+    font-family: var(--font-body); font-weight: 700;
+    font-size: 14px; cursor: pointer;
+    box-shadow: 0 6px 24px rgba(26,107,58,0.35);
+    display: flex; align-items: center; gap: 7px;
+    z-index: 500;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    position: fixed; bottom: 20px; left: 16px;
+    display: flex; flex-direction: column; gap: 9px;
+    z-index: 500;
+  }
+  .toolbar-btn {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 16px;
+    font-family: var(--font-body); font-weight: 700;
+    font-size: 13px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(15,27,20,0.12);
+    display: flex; align-items: center; gap: 7px;
+    color: var(--dark);
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .toolbar-btn:active { background: var(--smoke); }
+  .toolbar-btn.importar { color: var(--agua); border-color: var(--agua-light); }
+  .toolbar-btn.exportar { color: var(--verde); border-color: var(--verde-light); }
+  .toolbar-btn.salvar { background: var(--verde); color: var(--white); border-color: var(--verde); box-shadow: 0 4px 16px rgba(26,107,58,0.30); }
+  .toolbar-btn.salvar:active { background: var(--verde-dark, #155c30); }
+  .toolbar-btn.salvar.ok { background: #2d9653; border-color: #2d9653; }
+
+  /* ── BANNER iOS ── */
+  .ios-banner {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 16px 20px env(safe-area-inset-bottom, 16px);
+    box-shadow: 0 -8px 32px rgba(15,27,20,0.14);
+    z-index: 600;
+    animation: slideUp 0.35s ease;
+  }
+  .ios-banner.visible { display: block; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .ios-banner-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+  .ios-banner-title { font-family: var(--font-serif); font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+  .ios-banner-text { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .ios-banner-steps { list-style: none; counter-reset: step; margin-bottom: 16px; }
+  .ios-banner-steps li {
+    counter-increment: step;
+    font-size: 13px; color: var(--dark); line-height: 1.5;
+    padding: 6px 0 6px 32px; position: relative; border-bottom: 1px solid var(--border);
+  }
+  .ios-banner-steps li:last-child { border-bottom: none; }
+  .ios-banner-steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 6px;
+    width: 20px; height: 20px;
+    background: var(--verde); color: white;
+    border-radius: 50%; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ios-banner-close {
+    width: 100%; padding: 13px;
+    background: var(--verde); color: white; border: none;
+    border-radius: 12px; font-family: var(--font-body);
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+
+  /* input file escondido */
+  #inputImportar { display: none; }
+
+  @media (max-width: 500px) {
+    .resumo-bar { grid-template-columns: repeat(3, 1fr); }
+    .resumo-bar .resumo-item:nth-child(4),
+    .resumo-bar .resumo-item:nth-child(5) { display: none; }
+    .add-ativ { margin-left: 78px; width: calc(100% - 94px); }
+  }
+
+
+  .btn-editar-dia {
+    background: var(--verde-pale);
+    border: 1.5px solid var(--verde-light);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 10px;
+    color: var(--verde);
+    font-family: var(--font-cond);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+  .btn-editar-dia:active { background: var(--verde); color: var(--white); }
+  .dia-titulo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  @media print {
+    .print-btn, .toolbar, .ios-banner, .dias-nav, .add-ativ, .ativ-actions, .modal-overlay { display: none !important; }
+    .dia-body { display: block !important; }
+    body { background: white; }
+  }
 </style>
 </head>
 <body>
@@ -145,12 +583,6 @@
     <span class="badge"><span class="dot"></span> Brasil · Foz do Iguaçu</span>
     <span class="badge"><span class="dot azul"></span> Argentina · Puerto Iguazú</span>
     <span class="badge"><span class="dot ouro"></span> Paraguai · Ciudad del Este</span>
-  </div>
-
-  <!-- LISTA DE DATAS DO PERÍODO -->
-  <div class="datas-periodo">
-    <div class="datas-titulo">📅 Dias da viagem</div>
-    <div class="datas-lista" id="datasLista"></div>
   </div>
 </div>
 
@@ -176,29 +608,47 @@
 
 <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
 
+<!-- Toolbar flutuante esquerda -->
 <div class="toolbar">
   <button class="toolbar-btn salvar" onclick="salvarManual()" id="btnSalvar">💾 Salvar</button>
   <button class="toolbar-btn exportar" onclick="exportarAgenda()">📤 Exportar</button>
   <button class="toolbar-btn importar" onclick="document.getElementById('inputImportar').click()">📥 Importar</button>
-  <button class="toolbar-btn" style="color:#c0392b;border-color:#e74c3c;" onclick="resetarAgenda()" title="Apagar dados salvos e voltar ao roteiro original">🔄 Resetar</button>
+  <button class="toolbar-btn" onclick="mostrarBannerIOS()" title="Usar offline no iOS">📱 Offline</button>
 </div>
 
+<!-- Input oculto para importar -->
 <input type="file" id="inputImportar" accept=".json" onchange="importarAgenda(event)">
-<div id="toast"></div>
 
-<!-- Modal atividade -->
+<!-- Banner iOS install -->
+<div class="ios-banner" id="iosBanner">
+  <div class="ios-banner-handle"></div>
+  <div class="ios-banner-title">📱 Usar offline no iPhone</div>
+  <div class="ios-banner-text">Adicione esta agenda à tela de início para acessar sem internet durante a viagem:</div>
+  <ol class="ios-banner-steps">
+    <li>Toque no botão <strong>Compartilhar</strong> (<span style="font-size:15px">⎋</span>) na barra do Safari</li>
+    <li>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
+    <li>Toque em <strong>Adicionar</strong> no canto superior direito</li>
+    <li>O ícone da agenda aparece na sua tela inicial ✅</li>
+  </ol>
+  <button class="ios-banner-close" onclick="fecharBannerIOS()">Entendido!</button>
+</div>
+
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-handle"></div>
     <h3 id="modalTitulo">Nova Atividade</h3>
     <div class="form-group">
-      <label>Data do passeio</label>
-      <input type="date" id="fData">
-      <div id="fDataPreview" style="margin-top:6px;font-family:var(--font-cond);font-size:11px;color:var(--verde);font-weight:700;letter-spacing:.5px;min-height:16px;"></div>
+      <label>Horário</label>
+      <input type="time" id="fHora">
     </div>
-    <div class="form-group"><label>Horário</label><input type="time" id="fHora"></div>
-    <div class="form-group"><label>Nome da atividade</label><input type="text" id="fNome" placeholder="Ex: Cataratas do Iguaçu"></div>
-    <div class="form-group"><label>Descrição (opcional)</label><textarea id="fDesc" placeholder="Observações, dicas, preço..."></textarea></div>
+    <div class="form-group">
+      <label>Nome da atividade</label>
+      <input type="text" id="fNome" placeholder="Ex: Cataratas do Iguaçu">
+    </div>
+    <div class="form-group">
+      <label>Descrição (opcional)</label>
+      <textarea id="fDesc" placeholder="Observações, dicas, preço..."></textarea>
+    </div>
     <div class="form-group">
       <label>País</label>
       <select id="fPais">
@@ -234,12 +684,32 @@
     <div class="modal-handle"></div>
     <h3>✏️ Editar Passeio do Dia</h3>
     <div class="form-group">
-      <label>Nova data do passeio</label>
-      <input type="date" id="dData" style="font-size:16px;">
-      <div id="dDataPreview" style="margin-top:8px;font-family:var(--font-cond);font-size:12px;color:var(--verde);font-weight:700;letter-spacing:.5px;min-height:18px;"></div>
+      <label>Data</label>
+      <div style="display:flex;gap:8px;">
+        <select id="dDia" style="flex:1"></select>
+        <select id="dMes" style="flex:2">
+          <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+          <option value="03">Março</option><option value="04">Abril</option>
+          <option value="05">Maio</option><option value="06">Junho</option>
+          <option value="07">Julho</option><option value="08">Agosto</option>
+          <option value="09">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+        <select id="dAno" style="flex:1">
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
     </div>
-    <div class="form-group"><label>Título do passeio</label><input type="text" id="dTitulo" placeholder="Ex: Cataratas Brasileiras"></div>
-    <div class="form-group"><label>Descrição / detalhe</label><input type="text" id="dSubtitulo" placeholder="Ex: Parque Nacional do Iguaçu — manhã e tarde"></div>
+    <div class="form-group">
+      <label>Título do passeio</label>
+      <input type="text" id="dTitulo" placeholder="Ex: Cataratas Brasileiras">
+    </div>
+    <div class="form-group">
+      <label>Descrição / detalhe</label>
+      <input type="text" id="dSubtitulo" placeholder="Ex: Parque Nacional do Iguaçu — manhã e tarde">
+    </div>
     <div class="form-group">
       <label>País(es) do dia</label>
       <div id="dPaisesWrap" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
@@ -251,134 +721,129 @@
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="fecharModalDia()">Cancelar</button>
-      <button class="btn-save" id="btnSalvarDia" onclick="salvarDia()">Salvar</button>
+      <button class="btn-save" onclick="salvarDia()">Salvar</button>
     </div>
   </div>
 </div>
 
 <script>
 var agenda = {
-  "2026-06-19": { titulo:"Chegada em Foz", subtitulo:"Início da aventura nas Cataratas", paises:["br"], atividades:[
-    {hora:"19:25",nome:"Pouso em Foz do Iguaçu",desc:"Aeroporto Internacional Foz do Iguaçu (IGU)",pais:"transp",tipo:"transporte"},
-    {hora:"20:30",nome:"Check-in no hotel",desc:"Deixar as malas e descansar após o voo",pais:"br",tipo:"hospedagem"},
-    {hora:"22:00",nome:"Jantar de chegada",desc:"Restaurante à beira do Lago de Itaipu ou no centro de Foz",pais:"br",tipo:"refeição"}
-  ]},
-  "2026-06-20": { titulo:"Cataratas Brasileiras", subtitulo:"Parque Nacional do Iguaçu · Lado brasileiro", paises:["br"], atividades:[
-    {hora:"08:00",nome:"Café da manhã no hotel",desc:"Energia para o dia nas cataratas!",pais:"br",tipo:"refeição"},
-    {hora:"09:00",nome:"Parque Nacional do Iguaçu",desc:"Trilha das cataratas, passarelas e Garganta do Diabo. Ingresso ~R$100",pais:"br",tipo:"atração"},
-    {hora:"12:30",nome:"Almoço no Parque",desc:"Restaurante Porto Canoas (dentro do parque)",pais:"br",tipo:"refeição"},
-    {hora:"14:30",nome:"Macuco Safari (opcional)",desc:"Passeio de barco até a base das cataratas. Vai se molhar!",pais:"br",tipo:"atração"},
-    {hora:"17:00",nome:"Pôr do sol no parque",desc:"Luz dourada para fotos incríveis nas passarelas",pais:"br",tipo:"atração"},
-    {hora:"20:00",nome:"Jantar: Churrascaria no centro",desc:"Foz tem ótimas opções de churrasco gaúcho",pais:"br",tipo:"refeição"}
-  ]},
-  "2026-06-21": { titulo:"Cataratas Argentinas", subtitulo:"Puerto Iguazú · A vista mais impressionante", paises:["br","ar"], atividades:[
-    {hora:"08:00",nome:"Café da manhã e saída",desc:"Seguir para a Ponte Internacional Tancredo Neves",pais:"br",tipo:"refeição"},
-    {hora:"09:00",nome:"Travessia para Argentina",desc:"Cruzar a fronteira. Passaporte + câmbio de pesos argentinos",pais:"transp",tipo:"transporte"},
-    {hora:"09:30",nome:"Parque Nacional Iguazú · Argentina",desc:"Trem ecológico, Circuito Superior e Inferior. Ingresso ~USD 20",pais:"ar",tipo:"atração"},
-    {hora:"13:00",nome:"Almoço em Puerto Iguazú",desc:"La Aldea de la Selva ou restaurantes na Av. Brasil",pais:"ar",tipo:"refeição"},
-    {hora:"15:00",nome:"Hito das Três Fronteiras · Argentina",desc:"Vista para Brasil e Paraguai simultaneamente",pais:"ar",tipo:"atração"},
-    {hora:"17:30",nome:"Retorno ao Brasil",desc:"Travessia de volta pela ponte",pais:"transp",tipo:"transporte"},
-    {hora:"20:00",nome:"Jantar e descanso",desc:"Restaurante à escolha em Foz",pais:"br",tipo:"refeição"}
-  ]},
-  "2026-06-22": { titulo:"Ciudad del Este · Paraguai", subtitulo:"Compras e gastronomia paraguaia", paises:["br","py"], atividades:[
-    {hora:"08:30",nome:"Café da manhã e preparação",desc:"Separar documentos e lista de compras. Câmbio de guaranis (PYG)",pais:"br",tipo:"refeição"},
-    {hora:"09:30",nome:"Travessia Ponte da Amizade",desc:"BR-277 até Ciudad del Este. Limite de isenção: US$500 por pessoa",pais:"transp",tipo:"transporte"},
-    {hora:"10:00",nome:"Shoppings e comércio · CDE",desc:"Monalisa, Hipermaxi, Free Shop. Eletrônicos, perfumes, roupas e bebidas",pais:"py",tipo:"compras"},
-    {hora:"13:00",nome:"Almoço em Ciudad del Este",desc:"Culinária paraguaia ou opções internacionais nos shoppings",pais:"py",tipo:"refeição"},
-    {hora:"14:30",nome:"Mais compras estratégicas",desc:"Lojas especializadas no centro. Cuidado com cambistas e golpes!",pais:"py",tipo:"compras"},
-    {hora:"17:00",nome:"Retorno ao Brasil",desc:"Declaração na Receita Federal se necessário",pais:"transp",tipo:"transporte"},
-    {hora:"20:00",nome:"Jantar e organização das compras",desc:"Descanso no hotel em Foz",pais:"br",tipo:"refeição"}
-  ]},
-  "2026-06-23": { titulo:"Itaipu & Foz", subtitulo:"Usina e pontos turísticos locais", paises:["br"], atividades:[
-    {hora:"08:30",nome:"Café da manhã",desc:"Hotel ou cafeteria local",pais:"br",tipo:"refeição"},
-    {hora:"09:30",nome:"Usina de Itaipu",desc:"Tour panorâmico ou especial pela maior usina hidrelétrica binacional do mundo",pais:"br",tipo:"atração"},
-    {hora:"12:30",nome:"Almoço",desc:"Restaurante no Espaço das Américas (Itaipu) ou retornar ao centro",pais:"br",tipo:"refeição"},
-    {hora:"14:30",nome:"Ecomuseu de Itaipu",desc:"História da construção e impacto ambiental da usina. Gratuito",pais:"br",tipo:"atração"},
-    {hora:"16:30",nome:"Marco das Três Fronteiras",desc:"Obelisco no encontro dos rios Iguaçu e Paraná",pais:"br",tipo:"atração"},
-    {hora:"19:30",nome:"Jantar temático",desc:"Restaurante El Árabe ou Búfalo Branco — clássicos de Foz",pais:"br",tipo:"refeição"}
-  ]},
-  "2026-06-24": { titulo:"Dia Livre", subtitulo:"Explorar, descansar ou repetir favoritos", paises:["br"], atividades:[
-    {hora:"09:00",nome:"Manhã livre",desc:"Piscina do hotel, passeio pela orla ou revisitar pontos favoritos",pais:"livre",tipo:"livre"},
-    {hora:"12:00",nome:"Almoço à escolha",desc:"Explorar opções gastronômicas da cidade",pais:"br",tipo:"refeição"},
-    {hora:"14:00",nome:"Tarde livre / Opcional",desc:"Jardim das Aves, Parque das Aves, Aquário Municipal ou mais compras",pais:"br",tipo:"livre"},
-    {hora:"19:00",nome:"Jantar especial",desc:"Celebração da metade da viagem!",pais:"br",tipo:"refeição"}
-  ]},
-  "2026-06-25": { titulo:"Parque das Aves & Natureza", subtitulo:"Fauna e flora da Mata Atlântica", paises:["br"], atividades:[
-    {hora:"09:00",nome:"Parque das Aves",desc:"Mais de 900 aves exóticas, incluindo tucanos e flamingos. Ingresso ~R$80",pais:"br",tipo:"atração"},
-    {hora:"12:00",nome:"Almoço",desc:"Café/restaurante no parque ou proximidades",pais:"br",tipo:"refeição"},
-    {hora:"14:00",nome:"Centro de Foz / Compras finais",desc:"Último passeio pelas lojas, Camelódromo, souvenires",pais:"br",tipo:"compras"},
-    {hora:"17:00",nome:"Pôr do sol no Lago",desc:"Orla de Foz com vista para o Lago de Itaipu",pais:"br",tipo:"atração"},
-    {hora:"20:00",nome:"Jantar de penúltima noite",desc:"Restaurante à beira do rio ou churrascaria",pais:"br",tipo:"refeição"}
-  ]},
-  "2026-06-26": { titulo:"Último Dia Completo", subtitulo:"Pendências e memórias finais", paises:["br"], atividades:[
-    {hora:"09:00",nome:"Café da manhã especial",desc:"Aproveitar com calma o último café completo",pais:"br",tipo:"refeição"},
-    {hora:"10:00",nome:"Atividade pendente / Extra",desc:"Cataratas noturnas (sex/sáb), Santuário N. Sra. das Graças ou revisitar favorito",pais:"br",tipo:"atração"},
-    {hora:"12:30",nome:"Almoço de despedida",desc:"Retornar a um favorito ou experimentar algo novo",pais:"br",tipo:"refeição"},
-    {hora:"15:00",nome:"Preparar malas e check-out",desc:"Organizar compras, separar notas fiscais, fazer check-out do hotel",pais:"br",tipo:"hospedagem"},
-    {hora:"18:00",nome:"Jantar de encerramento",desc:"Última refeição em Foz — aproveite bastante!",pais:"br",tipo:"refeição"},
-    {hora:"22:00",nome:"Descanso antes do voo",desc:"Dormir cedo — voo de volta às 04:45h da madrugada",pais:"br",tipo:"livre"}
-  ]},
-  "2026-06-27": { titulo:"Retorno", subtitulo:"Até a próxima, Cataratas! ✈", paises:["br"], atividades:[
-    {hora:"03:00",nome:"Acordar e transfer para o aeroporto",desc:"Pedir transfer ou táxi com antecedência",pais:"transp",tipo:"transporte"},
-    {hora:"04:45",nome:"Voo de retorno",desc:"Aeroporto Internacional de Foz do Iguaçu (IGU) — boa viagem! 🛫",pais:"transp",tipo:"transporte"}
-  ]}
+  "2026-06-19": {
+    titulo: "Chegada em Foz",
+    subtitulo: "Início da aventura nas Cataratas",
+    paises: ["br"],
+    atividades: [
+      { hora: "19:25", nome: "Pouso em Foz do Iguaçu", desc: "Aeroporto Internacional Foz do Iguaçu (IGU)", pais: "transp", tipo: "transporte" },
+      { hora: "20:30", nome: "Check-in no hotel", desc: "Deixar as malas e descansar após o voo", pais: "br", tipo: "hospedagem" },
+      { hora: "22:00", nome: "Jantar de chegada", desc: "Restaurante à beira do Lago de Itaipu ou no centro de Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-20": {
+    titulo: "Cataratas Brasileiras",
+    subtitulo: "Parque Nacional do Iguaçu · Lado brasileiro",
+    paises: ["br"],
+    atividades: [
+      { hora: "08:00", nome: "Café da manhã no hotel", desc: "Energia para o dia nas cataratas!", pais: "br", tipo: "refeição" },
+      { hora: "09:00", nome: "Parque Nacional do Iguaçu", desc: "Trilha das cataratas, passarelas e Garganta do Diabo. Chegue cedo para evitar filas. Ingresso ~R$100", pais: "br", tipo: "atração" },
+      { hora: "12:30", nome: "Almoço no Parque", desc: "Restaurante Porto Canoas (dentro do parque)", pais: "br", tipo: "refeição" },
+      { hora: "14:30", nome: "Macuco Safari (opcional)", desc: "Passeio de barco até a base das cataratas. Vai se molhar!", pais: "br", tipo: "atração" },
+      { hora: "17:00", nome: "Pôr do sol no parque", desc: "Luz dourada para fotos incríveis nas passarelas", pais: "br", tipo: "atração" },
+      { hora: "20:00", nome: "Jantar: Churrascaria no centro", desc: "Foz tem ótimas opções de churrasco gaúcho", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-21": {
+    titulo: "Cataratas Argentinas",
+    subtitulo: "Puerto Iguazú · A vista mais impressionante",
+    paises: ["br","ar"],
+    atividades: [
+      { hora: "08:00", nome: "Café da manhã e saída", desc: "Seguir para a Ponte Internacional Tancredo Neves", pais: "br", tipo: "refeição" },
+      { hora: "09:00", nome: "Travessia para Argentina", desc: "Cruzar a fronteira. Passaporte + câmbio de pesos argentinos (ARS)", pais: "transp", tipo: "transporte" },
+      { hora: "09:30", nome: "Parque Nacional Iguazú · Argentina", desc: "Trem ecológico, Circuito Superior e Inferior. Garganta del Diabo é espetacular! Ingresso ~USD 20", pais: "ar", tipo: "atração" },
+      { hora: "13:00", nome: "Almoço em Puerto Iguazú", desc: "La Aldea de la Selva ou restaurantes na Av. Brasil com pratos típicos argentinos", pais: "ar", tipo: "refeição" },
+      { hora: "15:00", nome: "Hito das Três Fronteiras · Argentina", desc: "Vista para Brasil e Paraguai simultaneamente. Artesanato local", pais: "ar", tipo: "atração" },
+      { hora: "17:30", nome: "Retorno ao Brasil", desc: "Travessia de volta pela ponte", pais: "transp", tipo: "transporte" },
+      { hora: "20:00", nome: "Jantar e descanso", desc: "Restaurante à escolha em Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-22": {
+    titulo: "Ciudad del Este · Paraguai",
+    subtitulo: "Compras e gastronomia paraguaia",
+    paises: ["br","py"],
+    atividades: [
+      { hora: "08:30", nome: "Café da manhã e preparação", desc: "Separar documentos e lista de compras. Câmbio de guaranis (PYG)", pais: "br", tipo: "refeição" },
+      { hora: "09:30", nome: "Travessia Ponte da Amizade", desc: "BR-277 até Ciudad del Este. Limite de isenção: US$500 por pessoa", pais: "transp", tipo: "transporte" },
+      { hora: "10:00", nome: "Shoppings e comércio · CDE", desc: "Monalisa, Hipermaxi, Free Shop. Eletrônicos, perfumes, roupas e bebidas com preços imbatíveis", pais: "py", tipo: "compras" },
+      { hora: "13:00", nome: "Almoço em Ciudad del Este", desc: "Culinária paraguaia ou opções internacionais nos shoppings", pais: "py", tipo: "refeição" },
+      { hora: "14:30", nome: "Mais compras estratégicas", desc: "Lojas especializadas no centro. Cuidado com cambistas e golpes!", pais: "py", tipo: "compras" },
+      { hora: "17:00", nome: "Retorno ao Brasil", desc: "Declaração na Receita Federal se necessário", pais: "transp", tipo: "transporte" },
+      { hora: "20:00", nome: "Jantar e organização das compras", desc: "Descanso no hotel em Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-23": {
+    titulo: "Itaipu & Foz",
+    subtitulo: "Usina e pontos turísticos locais",
+    paises: ["br"],
+    atividades: [
+      { hora: "08:30", nome: "Café da manhã", desc: "Hotel ou cafeteria local", pais: "br", tipo: "refeição" },
+      { hora: "09:30", nome: "Usina de Itaipu", desc: "Tour panorâmico ou especial pela maior usina hidrelétrica binacional do mundo. Reservar com antecedência!", pais: "br", tipo: "atração" },
+      { hora: "12:30", nome: "Almoço", desc: "Restaurante no Espaço das Américas (Itaipu) ou retornar ao centro", pais: "br", tipo: "refeição" },
+      { hora: "14:30", nome: "Ecomuseu de Itaipu", desc: "História da construção e impacto ambiental da usina. Gratuito", pais: "br", tipo: "atração" },
+      { hora: "16:30", nome: "Marco das Três Fronteiras", desc: "Obelisco no encontro dos rios Iguaçu e Paraná. Vista para Argentina e Paraguai", pais: "br", tipo: "atração" },
+      { hora: "19:30", nome: "Jantar temático", desc: "Restaurante El Árabe ou Búfalo Branco — clássicos de Foz", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-24": {
+    titulo: "Dia Livre",
+    subtitulo: "Explorar, descansar ou repetir favoritos",
+    paises: ["br"],
+    atividades: [
+      { hora: "09:00", nome: "Manhã livre", desc: "Piscina do hotel, passeio pela orla ou revisitar pontos favoritos", pais: "livre", tipo: "livre" },
+      { hora: "12:00", nome: "Almoço à escolha", desc: "Explorar opções gastronômicas da cidade", pais: "br", tipo: "refeição" },
+      { hora: "14:00", nome: "Tarde livre / Opcional", desc: "Jardim das Aves, Parque das Aves, Aquário Municipal ou mais compras na Av. Brasil", pais: "br", tipo: "livre" },
+      { hora: "19:00", nome: "Jantar especial", desc: "Celebração da metade da viagem! Escolher o melhor restaurante visitado", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-25": {
+    titulo: "Parque das Aves & Natureza",
+    subtitulo: "Fauna e flora da Mata Atlântica",
+    paises: ["br"],
+    atividades: [
+      { hora: "09:00", nome: "Parque das Aves", desc: "Mais de 900 aves exóticas, incluindo tucanos e flamingos. Ingresso ~R$80", pais: "br", tipo: "atração" },
+      { hora: "12:00", nome: "Almoço", desc: "Café/restaurante no parque ou proximidades", pais: "br", tipo: "refeição" },
+      { hora: "14:00", nome: "Centro de Foz / Compras finais", desc: "Último passeio pelas lojas, Camelódromo, souvenires", pais: "br", tipo: "compras" },
+      { hora: "17:00", nome: "Pôr do sol no Lago", desc: "Orla de Foz com vista para o Lago de Itaipu", pais: "br", tipo: "atração" },
+      { hora: "20:00", nome: "Jantar de penúltima noite", desc: "Restaurante à beira do rio ou churrascaria", pais: "br", tipo: "refeição" }
+    ]
+  },
+  "2026-06-26": {
+    titulo: "Último Dia Completo",
+    subtitulo: "Pendências e memórias finais",
+    paises: ["br"],
+    atividades: [
+      { hora: "09:00", nome: "Café da manhã especial", desc: "Aproveitar com calma o último café completo", pais: "br", tipo: "refeição" },
+      { hora: "10:00", nome: "Atividade pendente / Extra", desc: "Cataratas noturnas (sex/sáb), Santuário N. Sra. das Graças ou revisitar favorito", pais: "br", tipo: "atração" },
+      { hora: "12:30", nome: "Almoço de despedida", desc: "Retornar a um favorito ou experimentar algo novo", pais: "br", tipo: "refeição" },
+      { hora: "15:00", nome: "Preparar malas e check-out", desc: "Organizar compras, separar notas fiscais, fazer check-out do hotel", pais: "br", tipo: "hospedagem" },
+      { hora: "18:00", nome: "Jantar de encerramento", desc: "Última refeição em Foz — aproveite bastante!", pais: "br", tipo: "refeição" },
+      { hora: "22:00", nome: "Descanso antes do voo", desc: "Dormir cedo — voo de volta às 04:45h da madrugada", pais: "br", tipo: "livre" }
+    ]
+  },
+  "2026-06-27": {
+    titulo: "Retorno",
+    subtitulo: "Até a próxima, Cataratas! ✈",
+    paises: ["br"],
+    atividades: [
+      { hora: "03:00", nome: "Acordar e transfer para o aeroporto", desc: "Pedir transfer ou táxi com antecedência. Manter bagagem separada!", pais: "transp", tipo: "transporte" },
+      { hora: "04:45", nome: "Voo de retorno", desc: "Aeroporto Internacional de Foz do Iguaçu (IGU) — boa viagem! 🛫", pais: "transp", tipo: "transporte" }
+    ]
+  }
 };
 
-var STORAGE_KEY = "foz-agenda-data";
+var datas = Object.keys(agenda).sort();
 var semanas = ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
-var semanasExt = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
 var meses = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
-var mesesExt = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-var modalDia = null, modalIdx = null, modalDiaData = null;
-var dragSrcData = null, dragSrcIdx = null;
-var diaDragSrc = null;
-var touchItem = null, touchClone = null, touchData = null, touchIdx = null;
-var diaTouchSrc = null, diaTouchClone = null, diaTouchKey = null;
-var tipoLabel = {atração:"Atração",refeição:"Refeição",transporte:"Transporte",hospedagem:"Hospedagem",compras:"Compras",livre:"Livre",noite:"Noturno"};
+var modalDia = null, modalIdx = null;
 
-// ── CORES DOS PAÍSES PARA OS CHIPS ──
-var paisCores = { br:"#2d9653", ar:"#1a9abf", py:"#c8a96e", livre:"#7a9b82", transp:"#263238" };
-
-// ── TOAST ──
-function showToast(msg, dur) {
-  var t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(function(){ t.classList.remove("show"); }, dur||2500);
-}
-
-// ── STORAGE ──
-async function salvarLocal() {
-  try {
-    if (window.storage) {
-      await window.storage.set(STORAGE_KEY, JSON.stringify(agenda));
-      return true;
-    }
-  } catch(e) { console.warn("salvar:", e); }
-  return false;
-}
-
-async function carregarLocal() {
-  try {
-    if (window.storage && typeof window.storage.get === "function") {
-      var result = null;
-      try { result = await window.storage.get(STORAGE_KEY); } catch(e) { /* chave inexistente */ }
-      if (result && result.value) {
-        try {
-          var parsed = JSON.parse(result.value);
-          if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
-            agenda = parsed;
-          }
-        } catch(e) { /* JSON inválido, usa padrão */ }
-      }
-    }
-  } catch(e) {
-    console.warn("carregarLocal:", e);
-  }
-  // renderAgenda é chamado pelo wrapper em INICIAR
-}
-
-// ── HELPERS ──
 function getPaisColor(p) {
   if (p==="ar") return "ar";
   if (p==="py") return "py";
@@ -392,78 +857,46 @@ function getPaisTag(p) {
   if (p==="py") return '<span class="pais-tag pais-py">🇵🇾 Paraguai</span>';
   return "";
 }
-
-// ── LISTA DE DATAS DO PERÍODO (novo) ──
-function renderDatasLista() {
-  var lista = document.getElementById("datasLista");
-  if (!lista) return;
-  var datas = Object.keys(agenda).sort();
-  lista.innerHTML = "";
-  datas.forEach(function(data) {
-    var d = agenda[data];
-    var dt = new Date(data + "T12:00:00");
-    var dia = String(dt.getDate()).padStart(2,"0");
-    var sem = semanas[dt.getDay()];
-    // dots de países
-    var paises = d.paises || ["br"];
-    var dotsHtml = paises.map(function(p){
-      var cor = paisCores[p] || "#7a9b82";
-      return '<span class="dc-dot" style="background:'+cor+'"></span>';
-    }).join("");
-    var chip = document.createElement("a");
-    chip.className = "data-chip";
-    chip.href = "#";
-    chip.innerHTML = '<span class="dc-num">'+dia+'</span><span class="dc-sem">'+sem+'</span><span class="dc-pais">'+dotsHtml+'</span>';
-    chip.addEventListener("click", function(e){
-      e.preventDefault();
-      var el = document.getElementById("dia-"+data);
-      if (el) {
-        // Garantir que está aberto
-        var body = document.getElementById("body-"+data);
-        var tog = document.getElementById("tog-"+data);
-        if (body && !body.classList.contains("aberto")) {
-          body.classList.add("aberto");
-          if (tog) tog.classList.add("aberto");
-        }
-        el.scrollIntoView({behavior:"smooth", block:"start"});
-      }
-    });
-    lista.appendChild(chip);
-  });
-}
+var tipoLabel = { atração:"Atração", refeição:"Refeição", transporte:"Transporte", hospedagem:"Hospedagem", compras:"Compras", livre:"Livre", noite:"Noturno" };
 
 function renderAtividades(data, atividades) {
   var html = "";
   atividades.forEach(function(a, i) {
     var dot = getPaisColor(a.pais);
     var lbl = tipoLabel[a.tipo] || a.tipo;
-    html += '<div class="atividade" draggable="true" data-data="'+data+'" data-idx="'+i+'" '+
-      'ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dragDrop(event)" ondragend="dragEnd(event)" '+
-      'ontouchstart="touchStart(event)" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)">'+
-      '<div class="drag-handle">⠿</div>'+
-      '<div class="ativ-left"><div class="ativ-hora">'+(a.hora||"--:--")+'</div></div>'+
-      '<div class="ativ-dot-wrap"><div class="ativ-dot '+dot+'"></div>'+(i<atividades.length-1?'<div class="ativ-dot-linha"></div>':'')+'</div>'+
-      '<div class="ativ-content">'+
-        '<div class="ativ-nome">'+a.nome+'</div>'+
-        (a.desc?'<div class="ativ-desc">'+a.desc+'</div>':'')+
-        '<span class="ativ-tipo tipo-'+a.tipo+'">'+lbl+'</span>'+
-      '</div>'+
-      '<div class="ativ-actions">'+
-        '<button class="btn-icon" onclick="abrirEditar(\''+data+'\','+i+')">✏️</button>'+
-        '<button class="btn-icon" onclick="deletar(\''+data+'\','+i+')">🗑</button>'+
+    html += '<div class="atividade" draggable="true" data-data="'+data+'" data-idx="'+i+'" ' +
+      'ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dragDrop(event)" ondragend="dragEnd(event)"' +
+      'ontouchstart="touchStart(event)" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)">' +
+      '<div class="drag-handle" title="Arrastar">⠿</div>' +
+      '<div class="ativ-left"><div class="ativ-hora">' + (a.hora||"--:--") + '</div></div>' +
+      '<div class="ativ-dot-wrap"><div class="ativ-dot ' + dot + '"></div>' +
+      (i < atividades.length-1 ? '<div class="ativ-dot-linha"></div>' : '') + '</div>' +
+      '<div class="ativ-content">' +
+        '<div class="ativ-nome">' + a.nome + '</div>' +
+        (a.desc ? '<div class="ativ-desc">' + a.desc + '</div>' : '') +
+        '<span class="ativ-tipo tipo-' + a.tipo + '">' + lbl + '</span>' +
+      '</div>' +
+      '<div class="ativ-actions">' +
+        '<button class="btn-icon" onclick="abrirEditar(\'' + data + '\',' + i + ')">✏️</button>' +
+        '<button class="btn-icon" onclick="deletar(\'' + data + '\',' + i + ')">🗑</button>' +
       '</div></div>';
   });
   return html;
 }
 
 function renderAgenda() {
-  var datas = Object.keys(agenda).sort();
+  datas = Object.keys(agenda).sort();
   var cont = document.getElementById("agenda");
   var nav = document.getElementById("diasNav");
-  var abertos = {};
-  datas.forEach(function(d){ var b=document.getElementById("body-"+d); if(b) abertos[d]=b.classList.contains("aberto"); });
-  cont.innerHTML=""; nav.innerHTML="";
+  cont.innerHTML = ""; nav.innerHTML = "";
   var total = 0;
+  var estadoAberto = {};
+  // salvar estado
+  datas.forEach(function(d) {
+    var b = document.getElementById("body-"+d);
+    if (b) estadoAberto[d] = b.classList.contains("aberto");
+  });
+
   datas.forEach(function(data, i) {
     var d = agenda[data];
     var dt = new Date(data+"T12:00:00");
@@ -471,36 +904,42 @@ function renderAgenda() {
     var sem = semanas[dt.getDay()];
     var mes = meses[dt.getMonth()];
     total += d.atividades.length;
+
+    // nav
     var btn = document.createElement("button");
     btn.textContent = String(dia).padStart(2,"0")+" "+sem;
-    btn.onclick = (function(dt){ return function(){ document.getElementById("dia-"+dt).scrollIntoView({behavior:"smooth",block:"start"}); }; })(data);
+    btn.onclick = (function(dt){ return function() {
+      document.getElementById("dia-"+dt).scrollIntoView({behavior:"smooth",block:"start"});
+    }; })(data);
     nav.appendChild(btn);
-    var aberto = (abertos[data]!==undefined) ? abertos[data] : (i===0);
-    var dataCompleta = dia+" de "+mesesExt[dt.getMonth()]+" de "+dt.getFullYear()+" · "+semanasExt[dt.getDay()];
+
+    var aberto = estadoAberto[data] !== undefined ? estadoAberto[data] : (i===0);
     var paisTags = d.paises.map(getPaisTag).join("");
     var card = document.createElement("div");
-    card.className="dia-card"; card.id="dia-"+data; card.setAttribute("draggable","true"); card.setAttribute("data-dia",data);
-    card.addEventListener("dragstart",diaDragStart); card.addEventListener("dragover",diaDragOver); card.addEventListener("drop",diaDrop); card.addEventListener("dragend",diaDragEnd);
-    card.addEventListener("touchstart",diaTouchStart,{passive:true}); card.addEventListener("touchmove",diaTouchMove,{passive:false}); card.addEventListener("touchend",diaTouchEnd);
+    card.className = "dia-card"; card.id = "dia-"+data;
+    card.setAttribute("draggable","true");
+    card.setAttribute("data-dia", data);
+    card.addEventListener("dragstart", diaDragStart);
+    card.addEventListener("dragover",  diaDragOver);
+    card.addEventListener("drop",      diaDrop);
+    card.addEventListener("dragend",   diaDragEnd);
+    card.addEventListener("touchstart", diaTouchStart, {passive:true});
+    card.addEventListener("touchmove",  diaTouchMove,  {passive:false});
+    card.addEventListener("touchend",   diaTouchEnd);
     card.innerHTML =
       '<div class="dia-header" onclick="toggleDia(\''+data+'\')">'+
-        '<div class="dia-drag-handle" onclick="event.stopPropagation()">⠿</div>'+
+        '<div class="dia-drag-handle" title="Arrastar dia" onclick="event.stopPropagation()">⠿</div>'+
         '<div class="dia-numero"><div class="num">'+String(dia).padStart(2,"0")+'</div><div class="mes">'+mes+'</div><div class="sem">'+sem+'</div></div>'+
-        '<div class="dia-info"><div class="dia-titulo-wrap"><div class="dia-titulo">'+d.titulo+'</div>'+
-          '<button class="btn-editar-dia" onclick="event.stopPropagation();abrirEditarDia(\''+data+'\')">✏️ Editar</button></div>'+
-          '<div class="dia-data-completa">'+dataCompleta+'</div>'+
-          '<div class="dia-subtitulo">'+d.subtitulo+'</div><div class="dia-paises">'+paisTags+'</div></div>'+
+        '<div class="dia-info"><div class="dia-titulo-wrap"><div class="dia-titulo">'+d.titulo+'</div><button class="btn-editar-dia" onclick="event.stopPropagation();abrirEditarDia(\''+data+'\')" title="Editar passeio do dia">✏️ Editar</button></div><div class="dia-subtitulo">'+d.subtitulo+'</div><div class="dia-paises">'+paisTags+'</div></div>'+
         '<div class="dia-toggle'+(aberto?" aberto":"")+'" id="tog-'+data+'">▾</div>'+
       '</div>'+
       '<div class="dia-body'+(aberto?" aberto":"")+'" id="body-'+data+'">'+
-        renderAtividades(data,d.atividades)+
+        renderAtividades(data, d.atividades)+
         '<button class="add-ativ" onclick="abrirNovo(\''+data+'\')">＋ Adicionar atividade</button>'+
       '</div>';
     cont.appendChild(card);
   });
   document.getElementById("total-ativ").textContent = total;
-  // Atualizar lista de datas no hero
-  renderDatasLista();
 }
 
 function toggleDia(data) {
@@ -508,14 +947,9 @@ function toggleDia(data) {
   document.getElementById("tog-"+data).classList.toggle("aberto");
 }
 
-// ── MODAL ATIVIDADE ──
 function abrirNovo(data) {
   modalDia=data; modalIdx=null;
   document.getElementById("modalTitulo").textContent="Nova Atividade";
-  var inp = document.getElementById("fData");
-  inp.value = data;
-  inp.onchange = atualizarPreviewAtiv;
-  atualizarPreviewAtiv();
   document.getElementById("fHora").value="";
   document.getElementById("fNome").value="";
   document.getElementById("fDesc").value="";
@@ -527,10 +961,6 @@ function abrirEditar(data, idx) {
   modalDia=data; modalIdx=idx;
   var a=agenda[data].atividades[idx];
   document.getElementById("modalTitulo").textContent="Editar Atividade";
-  var inp = document.getElementById("fData");
-  inp.value = data;
-  inp.onchange = atualizarPreviewAtiv;
-  atualizarPreviewAtiv();
   document.getElementById("fHora").value=a.hora||"";
   document.getElementById("fNome").value=a.nome;
   document.getElementById("fDesc").value=a.desc||"";
@@ -539,19 +969,7 @@ function abrirEditar(data, idx) {
   document.getElementById("modalOverlay").classList.add("open");
 }
 function fecharModal() { document.getElementById("modalOverlay").classList.remove("open"); }
-document.getElementById("modalOverlay").addEventListener("click",function(e){ if(e.target===this)fecharModal(); });
-
-function atualizarPreviewAtiv() {
-  var val = document.getElementById("fData").value;
-  var prev = document.getElementById("fDataPreview");
-  if (!val || !prev) return;
-  var dt = new Date(val + "T12:00:00");
-  if (isNaN(dt)) { prev.textContent = ""; return; }
-  prev.textContent = dt.getDate() + " de " + mesesExt[dt.getMonth()] + " de " + dt.getFullYear() + " · " + semanasExt[dt.getDay()];
-}
-
 function salvarAtividade() {
-  var novaData = document.getElementById("fData").value || modalDia;
   var nova = {
     hora: document.getElementById("fHora").value,
     nome: document.getElementById("fNome").value.trim(),
@@ -560,215 +978,362 @@ function salvarAtividade() {
     tipo: document.getElementById("fTipo").value
   };
   if (!nova.nome) { alert("Preencha o nome da atividade!"); return; }
-
-  // Se data mudou, move a atividade para o dia correto
-  if (novaData !== modalDia) {
-    // Remove do dia original (só se editando)
-    if (modalIdx !== null) {
-      agenda[modalDia].atividades.splice(modalIdx, 1);
-    }
-    // Se o dia destino não existe, cria automaticamente
-    if (!agenda[novaData]) {
-      var dt = new Date(novaData + "T12:00:00");
-      agenda[novaData] = {
-        titulo: "Passeio do dia " + dt.getDate() + "/" + (dt.getMonth()+1),
-        subtitulo: "Adicionado automaticamente",
-        paises: [nova.pais === "transp" || nova.pais === "livre" ? "br" : nova.pais],
-        atividades: []
-      };
-    }
-    agenda[novaData].atividades.push(nova);
-    agenda[novaData].atividades.sort(function(a,b){ return (a.hora||"99:99").localeCompare(b.hora||"99:99"); });
-    // Ordena o dia original também
-    agenda[modalDia].atividades.sort(function(a,b){ return (a.hora||"99:99").localeCompare(b.hora||"99:99"); });
-    showToast("✅ Atividade movida para " + novaData.split("-").reverse().join("/"));
+  if (modalIdx===null) {
+    agenda[modalDia].atividades.push(nova);
   } else {
-    // Mesma data: salva normalmente
-    if (modalIdx === null) {
-      agenda[modalDia].atividades.push(nova);
-    } else {
-      agenda[modalDia].atividades[modalIdx] = nova;
-    }
-    agenda[modalDia].atividades.sort(function(a,b){ return (a.hora||"99:99").localeCompare(b.hora||"99:99"); });
+    agenda[modalDia].atividades[modalIdx]=nova;
   }
-
+  agenda[modalDia].atividades.sort(function(a,b){ return (a.hora||"99:99").localeCompare(b.hora||"99:99"); });
   fecharModal();
-  salvarLocal();
   renderAgenda();
 }
-
 function deletar(data, idx) {
   if (!confirm("Excluir esta atividade?")) return;
   agenda[data].atividades.splice(idx,1);
+  renderAgenda();
+}
+document.getElementById("modalOverlay").addEventListener("click", function(e) {
+  if (e.target===this) fecharModal();
+});
+
+// ── DRAG & DROP DIAS (desktop) ──
+var diaDragSrc = null;
+function diaDragStart(e) {
+  // only allow drag from the handle
+  if (!e.target.closest(".dia-drag-handle")) { e.preventDefault(); return; }
+  diaDragSrc = this.dataset.dia;
+  this.classList.add("dia-dragging");
+  e.dataTransfer.effectAllowed = "move";
+}
+function diaDragOver(e) {
+  if (!diaDragSrc) return;
+  e.preventDefault();
+  document.querySelectorAll(".dia-card.dia-drag-over").forEach(function(el){ el.classList.remove("dia-drag-over"); });
+  if (this.dataset.dia !== diaDragSrc) this.classList.add("dia-drag-over");
+}
+function diaDrop(e) {
+  e.preventDefault();
+  var tgt = this.dataset.dia;
+  if (!diaDragSrc || diaDragSrc === tgt) return;
+  reordenarDias(diaDragSrc, tgt);
+}
+function diaDragEnd() {
+  document.querySelectorAll(".dia-card").forEach(function(el){
+    el.classList.remove("dia-dragging","dia-drag-over");
+  });
+  diaDragSrc = null;
+}
+
+// ── DRAG & DROP DIAS (touch/mobile) ──
+var diaTouchSrc = null, diaTouchClone = null, diaTouchKey = null;
+function diaTouchStart(e) {
+  if (!e.target.closest(".dia-drag-handle")) return;
+  diaTouchKey = this.dataset.dia;
+  diaTouchSrc = this;
+  var t = e.touches[0];
+  var rect = this.getBoundingClientRect();
+  diaTouchClone = this.cloneNode(true);
+  diaTouchClone.style.cssText = "position:fixed;top:"+rect.top+"px;left:"+rect.left+"px;width:"+rect.width+"px;opacity:0.85;z-index:9999;pointer-events:none;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.22);";
+  document.body.appendChild(diaTouchClone);
+  this.style.opacity = "0.3";
+}
+function diaTouchMove(e) {
+  if (!diaTouchClone) return;
+  e.preventDefault();
+  var t = e.touches[0];
+  var rect = diaTouchSrc.getBoundingClientRect();
+  diaTouchClone.style.top = (t.clientY - rect.height/2) + "px";
+  document.querySelectorAll(".dia-card.dia-drag-over").forEach(function(el){ el.classList.remove("dia-drag-over"); });
+  var under = document.elementFromPoint(t.clientX, t.clientY);
+  var tgt = under && under.closest(".dia-card");
+  if (tgt && tgt !== diaTouchSrc) tgt.classList.add("dia-drag-over");
+}
+function diaTouchEnd(e) {
+  if (!diaTouchClone) return;
+  var t = e.changedTouches[0];
+  var under = document.elementFromPoint(t.clientX, t.clientY);
+  var tgt = under && under.closest(".dia-card");
+  if (tgt && tgt !== diaTouchSrc) reordenarDias(diaTouchKey, tgt.dataset.dia);
+  diaTouchClone.remove(); diaTouchClone = null;
+  if (diaTouchSrc) diaTouchSrc.style.opacity = "";
+  diaTouchSrc = null; diaTouchKey = null;
+  document.querySelectorAll(".dia-card.dia-drag-over").forEach(function(el){ el.classList.remove("dia-drag-over"); });
+}
+
+// Troca dois dias de posição (swap de chaves no objeto agenda)
+function reordenarDias(srcKey, tgtKey) {
+  // Rebuild agenda as ordered array, swap positions, rebuild object
+  var keys = Object.keys(agenda).sort();
+  var srcIdx = keys.indexOf(srcKey);
+  var tgtIdx = keys.indexOf(tgtKey);
+  if (srcIdx < 0 || tgtIdx < 0) return;
+  // swap
+  var tmp = keys[srcIdx]; keys[srcIdx] = keys[tgtIdx]; keys[tgtIdx] = tmp;
+  // rebuild agenda preserving the reordered keys (we use a sorted-by-key display,
+  // so we reassign dates to maintain visual order)
+  // Strategy: swap the DATA (content) between the two keys, keeping dates fixed
+  var tmpData = JSON.parse(JSON.stringify(agenda[srcKey]));
+  agenda[srcKey] = JSON.parse(JSON.stringify(agenda[tgtKey]));
+  agenda[tgtKey] = tmpData;
   salvarLocal();
   renderAgenda();
 }
 
-// ── MODAL DIA ──
-function abrirEditarDia(data) {
-  modalDiaData = data;
-  var inp = document.getElementById("dData");
-  inp.value = data;
-  inp.onchange = atualizarPreviewData; // onchange evita acumulação de listeners
-  atualizarPreviewData();
-  document.getElementById("dTitulo").value = agenda[data].titulo || "";
-  document.getElementById("dSubtitulo").value = agenda[data].subtitulo || "";
-  var paises = agenda[data].paises || [];
-  document.querySelectorAll("#dPaisesWrap input[type=checkbox]").forEach(function(c){
-    c.checked = paises.indexOf(c.value) >= 0;
-  });
-  document.getElementById("modalDiaOverlay").classList.add("open");
-}
-
-function atualizarPreviewData() {
-  var val = document.getElementById("dData").value;
-  var prev = document.getElementById("dDataPreview");
-  if (!val) { prev.textContent = ""; return; }
-  var dt = new Date(val + "T12:00:00");
-  prev.textContent = dt.getDate() + " de " + mesesExt[dt.getMonth()] + " de " + dt.getFullYear() + " · " + semanasExt[dt.getDay()];
-}
-
-function fecharModalDia() {
-  document.getElementById("modalDiaOverlay").classList.remove("open");
-}
-
-function salvarDia() {
-  if (!modalDiaData) return;
-
-  var novaData = document.getElementById("dData").value;
-  if (!novaData) { alert("Selecione uma data válida!"); return; }
-
-  var t = document.getElementById("dTitulo").value.trim();
-  var s = document.getElementById("dSubtitulo").value.trim();
-  if (!t) { alert("Preencha o título!"); return; }
-
-  var checks = document.querySelectorAll("#dPaisesWrap input[type=checkbox]:checked");
-  var paises = Array.from(checks).map(function(c){ return c.value; });
-  if (paises.length === 0) paises = ["br"];
-
-  var btn = document.getElementById("btnSalvarDia");
-  btn.disabled = true;
-
-  agenda[modalDiaData].titulo = t;
-  agenda[modalDiaData].subtitulo = s;
-  agenda[modalDiaData].paises = paises;
-
-  if (novaData !== modalDiaData) {
-    // Se já existe outro dia nessa data, mescla as atividades (não apaga)
-    if (agenda[novaData]) {
-      agenda[novaData].atividades = agenda[novaData].atividades.concat(
-        JSON.parse(JSON.stringify(agenda[modalDiaData].atividades))
-      );
-      agenda[novaData].atividades.sort(function(a,b){ return (a.hora||"99:99").localeCompare(b.hora||"99:99"); });
-      // Atualiza título/subtítulo/países na data destino com os novos valores
-      agenda[novaData].titulo = t;
-      agenda[novaData].subtitulo = s;
-      agenda[novaData].paises = paises;
-      delete agenda[modalDiaData];
-    } else {
-      // Move para nova chave
-      agenda[novaData] = JSON.parse(JSON.stringify(agenda[modalDiaData]));
-      delete agenda[modalDiaData];
-    }
-    modalDiaData = novaData;
-  }
-
-  fecharModalDia();
-
-  // ★ AUTO-SALVAR após editar o cabeçalho do dia
-  salvarLocal().then(function(ok){
-    btn.disabled = false;
-    var dtPreview = document.getElementById("dDataPreview");
-    var msgData = dtPreview && dtPreview.textContent ? " · " + dtPreview.textContent : "";
-    if (ok) showToast("✅ Salvo" + msgData);
-    else showToast("⚠️ Não foi possível salvar. Use o botão 💾 para tentar novamente.", 4000);
-    renderAgenda();
-  });
-}
-
-// ── SALVAR MANUAL ──
-async function salvarManual() {
-  var btn = document.getElementById("btnSalvar");
-  btn.textContent = "⏳..."; btn.disabled = true;
-  var ok = await salvarLocal();
-  btn.disabled = false;
-  if (ok) {
-    btn.textContent = "✅ Salvo!"; btn.classList.add("ok");
-    setTimeout(function(){ btn.textContent="💾 Salvar"; btn.classList.remove("ok"); }, 2000);
-  } else {
-    btn.textContent = "❌ Erro";
-    setTimeout(function(){ btn.textContent="💾 Salvar"; }, 3000);
-  }
-}
-
-// ── EXPORTAR / IMPORTAR ──
+// ── EXPORTAR ──
 function exportarAgenda() {
-  var json = JSON.stringify({versao:"1.0",exportadoEm:new Date().toISOString(),agenda:agenda},null,2);
+  var dados = {
+    versao: "1.0",
+    exportadoEm: new Date().toISOString(),
+    agenda: agenda
+  };
+  var json = JSON.stringify(dados, null, 2);
+  var blob = new Blob([json], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
   var a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([json],{type:"application/json"}));
-  a.download = "agenda-foz-"+new Date().toISOString().slice(0,10)+".json";
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  a.href = url;
+  a.download = "agenda-foz-iguacu-" + new Date().toISOString().slice(0,10) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
+
+// ── IMPORTAR ──
 function importarAgenda(event) {
-  var file = event.target.files[0]; if(!file) return;
+  var file = event.target.files[0];
+  if (!file) return;
   var reader = new FileReader();
   reader.onload = function(e) {
     try {
       var dados = JSON.parse(e.target.result);
-      var nova = dados.agenda || dados;
-      var keys = Object.keys(nova);
-      if (!keys.length || !keys.every(function(d){ return nova[d]&&Array.isArray(nova[d].atividades); })) throw new Error("Estrutura inválida");
-      if (!confirm("Importar "+keys.length+" dias? Isso substituirá os dados atuais.")) return;
-      agenda = nova; salvarLocal(); renderAgenda();
-      showToast("✅ Agenda importada!");
-    } catch(err) { alert("❌ Erro ao importar: "+err.message); }
-    event.target.value="";
+      var novaAgenda = dados.agenda || dados;
+      var datasImport = Object.keys(novaAgenda);
+      if (datasImport.length === 0) throw new Error("Arquivo vazio");
+      var valido = datasImport.every(function(d) {
+        return novaAgenda[d] && Array.isArray(novaAgenda[d].atividades);
+      });
+      if (!valido) throw new Error("Estrutura inválida");
+      if (!confirm("Importar agenda? Isso substituirá os dados atuais.\n\n" + datasImport.length + " dias encontrados.")) return;
+      agenda = novaAgenda;
+      renderAgenda();
+      alert("✅ Agenda importada com sucesso!");
+    } catch(err) {
+      alert("❌ Erro ao importar: " + err.message + "\n\nVerifique se o arquivo é uma exportação válida desta agenda.");
+    }
+    event.target.value = "";
   };
   reader.readAsText(file);
 }
 
-// ── DRAG ATIVIDADES (desktop) ──
-function dragStart(e) { dragSrcData=e.currentTarget.dataset.data; dragSrcIdx=parseInt(e.currentTarget.dataset.idx); e.currentTarget.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; }
-function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect="move"; document.querySelectorAll(".atividade.drag-over").forEach(function(el){el.classList.remove("drag-over");}); e.currentTarget.classList.add("drag-over"); }
-function dragDrop(e) { e.preventDefault(); var tD=e.currentTarget.dataset.data,tI=parseInt(e.currentTarget.dataset.idx); if(dragSrcData===tD&&dragSrcIdx!==tI){var arr=agenda[dragSrcData].atividades,m=arr.splice(dragSrcIdx,1)[0];arr.splice(tI,0,m);salvarLocal();renderAgenda();} }
-function dragEnd() { document.querySelectorAll(".atividade").forEach(function(el){el.classList.remove("dragging","drag-over");}); }
-
-// ── DRAG DIAS (desktop) ──
-function diaDragStart(e) { if(!e.target.closest(".dia-drag-handle")){e.preventDefault();return;} diaDragSrc=this.dataset.dia; this.classList.add("dia-dragging"); e.dataTransfer.effectAllowed="move"; }
-function diaDragOver(e) { if(!diaDragSrc)return; e.preventDefault(); document.querySelectorAll(".dia-card.dia-drag-over").forEach(function(el){el.classList.remove("dia-drag-over");}); if(this.dataset.dia!==diaDragSrc)this.classList.add("dia-drag-over"); }
-function diaDrop(e) { e.preventDefault(); var tgt=this.dataset.dia; if(!diaDragSrc||diaDragSrc===tgt)return; var tmp=JSON.parse(JSON.stringify(agenda[diaDragSrc])); agenda[diaDragSrc]=JSON.parse(JSON.stringify(agenda[tgt])); agenda[tgt]=tmp; salvarLocal(); renderAgenda(); }
-function diaDragEnd() { document.querySelectorAll(".dia-card").forEach(function(el){el.classList.remove("dia-dragging","dia-drag-over");}); diaDragSrc=null; }
-
-// ── DRAG ATIVIDADES (touch) ──
-function touchStart(e) { if(e.target.closest(".btn-icon"))return; var el=e.currentTarget; touchData=el.dataset.data; touchIdx=parseInt(el.dataset.idx); touchItem=el; var t=e.touches[0]; touchClone=el.cloneNode(true); touchClone.style.cssText="position:fixed;top:"+(t.clientY-30)+"px;left:"+el.getBoundingClientRect().left+"px;width:"+el.offsetWidth+"px;opacity:.85;z-index:9999;pointer-events:none;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.18);background:#fff;"; document.body.appendChild(touchClone); el.style.opacity=".3"; }
-function touchMove(e) { if(!touchClone)return; e.preventDefault(); var t=e.touches[0]; touchClone.style.top=(t.clientY-30)+"px"; document.querySelectorAll(".atividade.drag-over").forEach(function(el){el.classList.remove("drag-over");}); var under=document.elementFromPoint(t.clientX,t.clientY),tgt=under&&under.closest(".atividade"); if(tgt&&tgt!==touchItem)tgt.classList.add("drag-over"); }
-function touchEnd(e) { if(!touchClone)return; var t=e.changedTouches[0],under=document.elementFromPoint(t.clientX,t.clientY),tgt=under&&under.closest(".atividade"); if(tgt&&tgt!==touchItem){var tD=tgt.dataset.data,tI=parseInt(tgt.dataset.idx);if(touchData===tD){var arr=agenda[touchData].atividades,m=arr.splice(touchIdx,1)[0];arr.splice(tI,0,m);salvarLocal();}} touchClone.remove();touchClone=null;if(touchItem)touchItem.style.opacity="";touchItem=null;document.querySelectorAll(".atividade.drag-over").forEach(function(el){el.classList.remove("drag-over");});renderAgenda(); }
-
-// ── DRAG DIAS (touch) ──
-function diaTouchStart(e) { if(!e.target.closest(".dia-drag-handle"))return; diaTouchKey=this.dataset.dia;diaTouchSrc=this;var t=e.touches[0],rect=this.getBoundingClientRect();diaTouchClone=this.cloneNode(true);diaTouchClone.style.cssText="position:fixed;top:"+rect.top+"px;left:"+rect.left+"px;width:"+rect.width+"px;opacity:.85;z-index:9999;pointer-events:none;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.22);";document.body.appendChild(diaTouchClone);this.style.opacity=".3"; }
-function diaTouchMove(e) { if(!diaTouchClone)return; e.preventDefault();var t=e.touches[0],rect=diaTouchSrc.getBoundingClientRect();diaTouchClone.style.top=(t.clientY-rect.height/2)+"px";document.querySelectorAll(".dia-card.dia-drag-over").forEach(function(el){el.classList.remove("dia-drag-over");});var under=document.elementFromPoint(t.clientX,t.clientY),tgt=under&&under.closest(".dia-card");if(tgt&&tgt!==diaTouchSrc)tgt.classList.add("dia-drag-over"); }
-function diaTouchEnd(e) { if(!diaTouchClone)return;var t=e.changedTouches[0],under=document.elementFromPoint(t.clientX,t.clientY),tgt=under&&under.closest(".dia-card");if(tgt&&tgt!==diaTouchSrc){var k=tgt.dataset.dia;var tmp=JSON.parse(JSON.stringify(agenda[diaTouchKey]));agenda[diaTouchKey]=JSON.parse(JSON.stringify(agenda[k]));agenda[k]=tmp;salvarLocal();}diaTouchClone.remove();diaTouchClone=null;if(diaTouchSrc)diaTouchSrc.style.opacity="";diaTouchSrc=null;diaTouchKey=null;document.querySelectorAll(".dia-card.dia-drag-over").forEach(function(el){el.classList.remove("dia-drag-over");});renderAgenda(); }
-
-// ── RESETAR ──
-async function resetarAgenda() {
-  if (!confirm("Resetar para o roteiro original? Os dados salvos serão apagados.")) return;
-  try {
-    if (window.storage && typeof window.storage.delete === "function") {
-      await window.storage.delete(STORAGE_KEY);
-    }
-  } catch(e) {}
-  location.reload();
+// ── BANNER iOS ──
+function mostrarBannerIOS() {
+  document.getElementById("iosBanner").classList.add("visible");
+}
+function fecharBannerIOS() {
+  document.getElementById("iosBanner").classList.remove("visible");
 }
 
-// ── INICIAR ──
-// Garante render mesmo sem storage (arquivo local, iframe, etc.)
-(function() {
-  var rendered = false;
-  function garantirRender() { if (!rendered) { rendered = true; renderAgenda(); } }
-  // Fallback: se carregarLocal demorar mais de 800ms, renderiza com dados padrão
-  setTimeout(garantirRender, 800);
-  carregarLocal().then(function() { garantirRender(); }).catch(function() { garantirRender(); });
-})();
+
+// ── PERSISTÊNCIA: salvar = baixar HTML atualizado ──
+function salvarLocal() { /* não-op, dados ficam em memória */ }
+
+async function carregarLocal() {
+  // Dados já estão embutidos no var agenda acima
+  renderAgenda();
+}
+
+async function salvarManual() {
+  var btn = document.getElementById("btnSalvar");
+  btn.textContent = "⏳ Gerando...";
+  btn.disabled = true;
+
+  try {
+    // Pega o HTML atual da página
+    var html = document.documentElement.outerHTML;
+
+    // Substitui o bloco var agenda = { ... } pelo estado atual
+    var agendaJSON = JSON.stringify(agenda, null, 2);
+    html = html.replace(
+      /var agenda\s*=\s*\{[\s\S]*?\};\s*(?=\n\s*(\/\/|var |function ))/,
+      "var agenda = " + agendaJSON + ";\n"
+    );
+
+    var blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "agenda-foz-iguacu.html";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    btn.disabled = false;
+    btn.textContent = "✅ Salvo!";
+    btn.classList.add("ok");
+    setTimeout(function() {
+      btn.textContent = "💾 Salvar";
+      btn.classList.remove("ok");
+    }, 2500);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = "❌ Erro";
+    setTimeout(function() { btn.textContent = "💾 Salvar"; }, 3000);
+  }
+}
+
+// Sobrescrever funções para salvar automaticamente
+var _salvarAtividade = salvarAtividade;
+salvarAtividade = function() { _salvarAtividade(); salvarLocal(); };
+var _deletar = deletar;
+deletar = function(data, idx) {
+  if (!confirm("Excluir esta atividade?")) return;
+  agenda[data].atividades.splice(idx,1);
+  salvarLocal();
+  renderAgenda();
+};
+
+carregarLocal(); // async: carrega dados e chama renderAgenda() ao terminar
+
+// ── EDITAR DIA ──
+var modalDiaData = null;
+function abrirEditarDia(data) {
+  modalDiaData = data;
+  // Preencher opções de dia (1-31)
+  var selDia = document.getElementById("dDia");
+  selDia.innerHTML = "";
+  for (var d = 1; d <= 31; d++) {
+    var opt = document.createElement("option");
+    opt.value = String(d).padStart(2,"0");
+    opt.textContent = String(d).padStart(2,"0");
+    selDia.appendChild(opt);
+  }
+  // Setar valores da data atual
+  var partes = data.split("-"); // ["2026","06","20"]
+  document.getElementById("dAno").value = partes[0];
+  document.getElementById("dMes").value = partes[1];
+  document.getElementById("dDia").value  = partes[2];
+
+  document.getElementById("dTitulo").value = agenda[data].titulo || "";
+  document.getElementById("dSubtitulo").value = agenda[data].subtitulo || "";
+  var checks = document.querySelectorAll("#dPaisesWrap input[type=checkbox]");
+  var paises = agenda[data].paises || [];
+  checks.forEach(function(c) { c.checked = paises.indexOf(c.value) >= 0; });
+  document.getElementById("modalDiaOverlay").classList.add("open");
+}
+function fecharModalDia() {
+  document.getElementById("modalDiaOverlay").classList.remove("open");
+}
+function salvarDia() {
+  var dia = document.getElementById("dDia").value;
+  var mes = document.getElementById("dMes").value;
+  var ano = document.getElementById("dAno").value;
+  var novaData = ano + "-" + mes + "-" + String(dia).padStart(2,"0");
+  var t = document.getElementById("dTitulo").value.trim();
+  var s = document.getElementById("dSubtitulo").value.trim();
+  if (!t) { alert("Preencha o título!"); return; }
+  var checks = document.querySelectorAll("#dPaisesWrap input[type=checkbox]:checked");
+  var paises = Array.from(checks).map(function(c){ return c.value; });
+  if (paises.length === 0) paises = ["br"];
+
+  if (novaData !== modalDiaData) {
+    if (agenda[novaData]) {
+      if (!confirm("Já existe um dia com essa data. Deseja substituí-lo?")) return;
+    }
+    var dadosDia = agenda[modalDiaData];
+    delete agenda[modalDiaData];
+    agenda[novaData] = dadosDia;
+    modalDiaData = novaData;
+  }
+  agenda[modalDiaData].titulo = t;
+  agenda[modalDiaData].subtitulo = s;
+  agenda[modalDiaData].paises = paises;
+  salvarLocal();
+  fecharModalDia();
+  renderAgenda();
+}
+
+// ── DRAG & DROP (desktop) ──
+var dragSrcData = null, dragSrcIdx = null;
+function dragStart(e) {
+  dragSrcData = e.currentTarget.dataset.data;
+  dragSrcIdx  = parseInt(e.currentTarget.dataset.idx);
+  e.currentTarget.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+}
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  document.querySelectorAll(".atividade.drag-over").forEach(function(el){ el.classList.remove("drag-over"); });
+  e.currentTarget.classList.add("drag-over");
+}
+function dragDrop(e) {
+  e.preventDefault();
+  var tgtData = e.currentTarget.dataset.data;
+  var tgtIdx  = parseInt(e.currentTarget.dataset.idx);
+  if (dragSrcData === tgtData && dragSrcIdx !== tgtIdx) {
+    var arr = agenda[dragSrcData].atividades;
+    var moved = arr.splice(dragSrcIdx, 1)[0];
+    arr.splice(tgtIdx, 0, moved);
+    salvarLocal();
+    renderAgenda();
+  }
+}
+function dragEnd(e) {
+  document.querySelectorAll(".atividade").forEach(function(el){
+    el.classList.remove("dragging","drag-over");
+  });
+}
+
+// ── DRAG & DROP (touch/mobile) ──
+var touchItem = null, touchClone = null, touchData = null, touchIdx = null;
+function touchStart(e) {
+  if (e.target.closest(".btn-icon") || e.target.closest(".ativ-actions")) return;
+  var el = e.currentTarget;
+  touchData = el.dataset.data;
+  touchIdx  = parseInt(el.dataset.idx);
+  touchItem = el;
+  var t = e.touches[0];
+  touchClone = el.cloneNode(true);
+  touchClone.style.cssText = "position:fixed;top:"+(t.clientY-30)+"px;left:"+el.getBoundingClientRect().left+"px;width:"+el.offsetWidth+"px;opacity:0.85;z-index:9999;pointer-events:none;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.18);background:#fff;";
+  document.body.appendChild(touchClone);
+  el.style.opacity = "0.3";
+}
+function touchMove(e) {
+  if (!touchClone) return;
+  e.preventDefault();
+  var t = e.touches[0];
+  touchClone.style.top = (t.clientY - 30) + "px";
+  // highlight target
+  document.querySelectorAll(".atividade.drag-over").forEach(function(el){ el.classList.remove("drag-over"); });
+  var under = document.elementFromPoint(t.clientX, t.clientY);
+  var tgt = under && under.closest(".atividade");
+  if (tgt && tgt !== touchItem) tgt.classList.add("drag-over");
+}
+function touchEnd(e) {
+  if (!touchClone) return;
+  var t = e.changedTouches[0];
+  var under = document.elementFromPoint(t.clientX, t.clientY);
+  var tgt = under && under.closest(".atividade");
+  if (tgt && tgt !== touchItem) {
+    var tgtData = tgt.dataset.data;
+    var tgtIdx  = parseInt(tgt.dataset.idx);
+    if (touchData === tgtData) {
+      var arr = agenda[touchData].atividades;
+      var moved = arr.splice(touchIdx, 1)[0];
+      arr.splice(tgtIdx, 0, moved);
+      salvarLocal();
+    }
+  }
+  touchClone.remove(); touchClone = null;
+  if (touchItem) touchItem.style.opacity = "";
+  touchItem = null;
+  document.querySelectorAll(".atividade.drag-over").forEach(function(el){ el.classList.remove("drag-over"); });
+  renderAgenda();
+}
+
+// carregarLocal() já chama renderAgenda() ao terminar
 </script>
+
 </body>
 </html>
